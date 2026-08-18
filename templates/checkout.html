@@ -20,26 +20,148 @@
                 {{ form.hidden_tag() }}
                 <div class="form-group">
                     {{ form.customer_name.label }}<br>
-                    {{ form.customer_name(class="form-control", style="width:100%; padding:8px;") }}
+                    {{ form.customer_name(class="form-control",id="customer_name", style="width:100%; padding:8px;") }}
                     {% for error in form.customer_name.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
                     {{ form.customer_email.label }}<br>
-                    {{ form.customer_email(class="form-control", style="width:100%; padding:8px;") }}
+                    {{ form.customer_email(class="form-control",id="customer_email", style="width:100%; padding:8px;")
+                    }}
                     {% for error in form.customer_email.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
                     {{ form.customer_phone.label }}<br>
-                    {{ form.customer_phone(class="form-control", style="width:100%; padding:8px;") }}
+                    {{ form.customer_phone(class="form-control",id="customer_phone", style="width:100%; padding:8px;",
+                    maxlength="20") }}
                     {% for error in form.customer_phone.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
                     {{ form.address.label }}<br>
-                    {{ form.address(rows=3, class="form-control", style="width:100%; padding:8px;") }}
+                    {{ form.address(rows=3, class="form-control", id="customer_address",style="width:100%;
+                    padding:8px;") }}
+                </div>
+                <div class="form-group">
+                    {{ form.comment.label }}<br>
+                    {{ form.comment(rows=3, class="form-control", id="customer_comment", style="width:100%;
+                    padding:8px;") }}
+                    {% for error in form.comment.errors %}
+                    <span style="color:red;">{{ error }}</span>
+                    {% endfor %}
                 </div>
                 <button type="submit" class="btn" style="margin-top: 15px;">Подтвердить заказ</button>
             </form>
         </div>
     </div>
 </div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Получаем поля
+        const phoneInput = document.getElementById('customer_phone');
+        const nameInput = document.getElementById('customer_name');
+        const addressInput = document.getElementById('customer_address');
+        const commentInput = document.getElementById('customer_comment');
+
+        // Функция показа ошибки
+        function showError(input, message) {
+            let errorSpan = input.parentElement.querySelector('.validation-error');
+            if (!errorSpan) {
+                errorSpan = document.createElement('span');
+                errorSpan.className = 'validation-error';
+                errorSpan.style.color = 'red';
+                errorSpan.style.fontSize = '0.9rem';
+                input.parentElement.appendChild(errorSpan);
+            }
+            errorSpan.textContent = message;
+            input.style.borderColor = 'red';
+        }
+
+        function clearError(input) {
+            const errorSpan = input.parentElement.querySelector('.validation-error');
+            if (errorSpan) errorSpan.remove();
+            input.style.borderColor = '';
+        }
+
+        // Валидация телефона
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function () {
+                // Удаляем все недопустимые символы
+                let cleaned = this.value.replace(/[^\d\s\-\(\)\+]/g, '');
+                // Ограничиваем длину 20 символов
+                if (cleaned.length > 20) cleaned = cleaned.slice(0, 20);
+                this.value = cleaned;
+
+                // Проверяем минимальную длину (10 цифр)
+                const digitsOnly = cleaned.replace(/\D/g, '');
+                if (digitsOnly.length < 10) {
+                    showError(this, 'Минимум 10 цифр в номере');
+                } else {
+                    clearError(this);
+                }
+            });
+
+            phoneInput.addEventListener('blur', function () {
+                const digitsOnly = this.value.replace(/\D/g, '');
+                if (digitsOnly.length < 10) {
+                    showError(this, 'Минимум 10 цифр в номере');
+                }
+            });
+        }
+
+        // Валидация имени
+        if (nameInput) {
+            nameInput.addEventListener('input', function () {
+                // Разрешаем буквы, пробел, дефис, апостроф
+                let cleaned = this.value.replace(/[^A-Za-zА-Яа-яЁё\s\-']/g, '');
+                if (cleaned.length > 50) cleaned = cleaned.slice(0, 50);
+                this.value = cleaned;
+                if (this.value.length === 0) {
+                    showError(this, 'Имя обязательно');
+                } else {
+                    clearError(this);
+                }
+            });
+        }
+
+        // Ограничение длины для адреса и комментария
+        function limitLength(input, maxLen) {
+            input.addEventListener('input', function () {
+                if (this.value.length > maxLen) {
+                    this.value = this.value.slice(0, maxLen);
+                    showError(this, `Максимум ${maxLen} символов`);
+                } else {
+                    clearError(this);
+                }
+            });
+        }
+
+        if (addressInput) limitLength(addressInput, 200);
+        if (commentInput) limitLength(commentInput, 200);
+
+        // Перед отправкой формы проводим финальную проверку
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function (e) {
+            let isValid = true;
+
+            if (phoneInput) {
+                const digitsOnly = phoneInput.value.replace(/\D/g, '');
+                if (digitsOnly.length < 10) {
+                    showError(phoneInput, 'Введите корректный телефон (минимум 10 цифр)');
+                    isValid = false;
+                }
+            }
+
+            if (nameInput && nameInput.value.trim() === '') {
+                showError(nameInput, 'Имя обязательно');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}

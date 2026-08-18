@@ -4,8 +4,8 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, logout_user, login_required, current_user
 from PIL import Image
 from werkzeug.utils import secure_filename
-from models import db, Product, ProductImage, User
 from forms import LoginForm, ProductForm
+from models import db, Product, ProductImage, User, Order
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -149,3 +149,27 @@ def delete_product(product_id):
     db.session.commit()
     flash('Товар удалён', 'success')
     return redirect(url_for('admin.products'))
+
+
+@admin_bp.route('/orders')
+@login_required
+def orders():
+    all_orders = Order.query.order_by(Order.created_at.desc()).all()
+    return render_template('admin/orders.html', orders=all_orders)
+
+
+@admin_bp.route('/orders/<int:order_id>')
+@login_required
+def order_detail(order_id):
+    order = Order.query.get_or_404(order_id)
+    return render_template('admin/order_detail.html', order=order)
+
+
+@admin_bp.route('/orders/delete/<int:order_id>')
+@login_required
+def delete_order(order_id):
+    order = Order.query.get_or_404(order_id)
+    db.session.delete(order)  # благодаря cascade удалятся и элементы заказа
+    db.session.commit()
+    flash('Заказ удалён', 'success')
+    return redirect(url_for('admin.orders'))

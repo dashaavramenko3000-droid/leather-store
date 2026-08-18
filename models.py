@@ -40,18 +40,22 @@ class ProductImage(db.Model):
     def __repr__(self):
         return f'<ProductImage {self.image_path}>'
 
+
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_name = db.Column(db.String(100), nullable=False)
     customer_email = db.Column(db.String(120), nullable=False)
-    customer_phone = db.Column(db.String(30), nullable=False)
-    address = db.Column(db.Text)
+    customer_phone = db.Column(db.String(20), nullable=False)
+
+    address = db.Column(db.String(200), nullable=False)
+    comment = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     total_price = db.Column(db.Integer, nullable=False)  # в рублях
     items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Order {self.id}>'
+
 
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)

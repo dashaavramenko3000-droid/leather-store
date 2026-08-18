@@ -21,14 +21,21 @@
         </div>
         <nav class="main-nav">
             <ul>
-                <li><a href="{{ url_for('catalog') }}">Наши изделия</a></li>
+                <li><a href="{{ url_for('home') }}">Главная</a></li>
+                <li><a href="{{ url_for('catalog') }}">Каталог</a></li>
                 <li><a href="{{ url_for('home') }}#about">О нас</a></li>
                 <li><a href="{{ url_for('home') }}#contacts">Контакты</a></li>
-                <li><a href="{{ url_for('cart') }}">Корзина ({{ cart_total }})</a></li>
             </ul>
         </nav>
         <div class="header-contacts">
             <a href="tel:+79991234567">+7 (999) 123-45-67</a>
+        </div>
+        <!-- Новый блок корзины -->
+        <div class="header-cart">
+            <a href="{{ url_for('cart') }}" aria-label="Корзина">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">{{ cart_total }}</span>
+            </a>
         </div>
     </div>
 </header>

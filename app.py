@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from models import db, User, Product, Order, OrderItem
 from admin import admin_bp
 from flask import session, redirect, url_for, flash, request
+from forms import CheckoutForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
@@ -31,6 +32,7 @@ def load_user(user_id):
 
 
 app.register_blueprint(admin_bp)
+
 
 @app.context_processor
 def cart_total_count():
@@ -109,10 +111,24 @@ def add_to_cart(product_id):
 @app.route('/cart')
 def cart():
     cart = session.get('cart', {})
+    updated_cart = dict(cart)
+    removed = False
+
+    for product_id in list(updated_cart.keys()):
+        product = db.session.get(Product, int(product_id))
+        if not product:
+            updated_cart.pop(product_id, None)
+            removed = True
+
+    if removed:
+        session['cart'] = updated_cart
+        cart = updated_cart
+        flash('Некоторые товары были удалены из каталога и убраны из корзины.', 'warning')
+
     cart_items = []
     total = 0
     for product_id, qty in cart.items():
-        product = Product.query.get(int(product_id))
+        product = db.session.get(Product, int(product_id))
         if product:
             subtotal = product.price * qty
             total += subtotal
@@ -121,6 +137,7 @@ def cart():
                 'quantity': qty,
                 'subtotal': subtotal
             })
+
     return render_template('cart.html', cart_items=cart_items, total=total)
 
 
@@ -150,30 +167,73 @@ def checkout():
     if not cart:
         flash('Ваша корзина пуста', 'info')
         return redirect(url_for('catalog'))
+
+    # === Обработка исчезнувших товаров ===
+    # Создаём копию корзины, чтобы безопасно изменять session['cart']
+    updated_cart = dict(cart)
+    removed_products = []
+
+    for product_id in list(updated_cart.keys()):
+        product = db.session.get(Product, int(product_id))
+        if not product:
+            # Товар удалён из базы — убираем его из корзины
+            updated_cart.pop(product_id, None)
+            removed_products.append(product_id)
+
+    if removed_products:
+        # Обновляем сессию
+        session['cart'] = updated_cart
+        cart = updated_cart
+
+        # Уведомляем пользователя
+        if len(removed_products) == 1:
+            flash('Один из товаров был удалён из каталога и убран из вашей корзины.', 'warning')
+        else:
+            flash(
+                f'Несколько товаров были удалены из каталога и убраны из вашей корзины ({len(removed_products)} шт.).',
+                'warning')
+
+        # Если корзина стала пустой — перенаправляем в каталог
+        if not cart:
+            flash('Все товары из вашей корзины были удалены.', 'info')
+            return redirect(url_for('catalog'))
+    # ===================================
+
     form = CheckoutForm()
     if form.validate_on_submit():
-        # Создаём заказ
+        # Пересчитываем итоговую сумму по актуальной корзине
         total = 0
-        items = []
+        items_data = []
         for product_id, qty in cart.items():
-            product = Product.query.get(int(product_id))
-            if product:
-                total += product.price * qty
-                items.append({
+            product = db.session.get(Product, int(product_id))
+            if product:  # Дополнительная проверка на случай, если товар исчез после проверки
+                subtotal = product.price * qty
+                total += subtotal
+                items_data.append({
                     'product': product,
                     'quantity': qty,
-                    'subtotal': product.price * qty
+                    'subtotal': subtotal
                 })
+
+        # Если вдруг все товары исчезли (маловероятно, но возможно)
+        if not items_data:
+            session.pop('cart', None)
+            flash('К сожалению, все товары в корзине недоступны. Заказ не оформлен.', 'danger')
+            return redirect(url_for('catalog'))
+
+        # Создаём заказ
         order = Order(
             customer_name=form.customer_name.data,
             customer_email=form.customer_email.data,
             customer_phone=form.customer_phone.data,
             address=form.address.data,
+            comment=form.comment.data,
             total_price=total
         )
         db.session.add(order)
-        db.session.flush()  # получить id заказа
-        for item in items:
+        db.session.flush()  # получаем order.id
+
+        for item in items_data:
             order_item = OrderItem(
                 order_id=order.id,
                 product_id=item['product'].id,
@@ -182,15 +242,18 @@ def checkout():
                 quantity=item['quantity']
             )
             db.session.add(order_item)
+
         db.session.commit()
         session.pop('cart', None)  # очищаем корзину
         flash('Заказ успешно оформлен! Мы свяжемся с вами.', 'success')
         return redirect(url_for('order_confirmation', order_id=order.id))
-    # Если GET или ошибки валидации, показываем форму
-    cart_items = []
-    total = 0
-    for product_id, qty in cart.items():
-        product = Product.query.get(int(product_id))
+
+    # Если GET-запрос или форма не прошла валидацию — показываем корзину
+    else:
+        cart_items = []
+        total = 0
+        for product_id, qty in cart.items():
+            product = db.session.get(Product, int(product_id))
         if product:
             subtotal = product.price * qty
             total += subtotal
@@ -199,7 +262,8 @@ def checkout():
                 'quantity': qty,
                 'subtotal': subtotal
             })
-    return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
+
+        return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
 
 
 @app.route('/order_confirmation/<int:order_id>')
