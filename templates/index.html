@@ -15,44 +15,23 @@
 <!-- Преимущества -->
 <section class="features">
     <div class="container features-grid">
-        <div class="feature">
+        <div class="feature" data-aos="fade-up" data-aos-delay="100">
             <h3>Натуральная кожа</h3>
             <p>Используем только кожу растительного дубления высшего качества.</p>
         </div>
-        <div class="feature">
+        <div class="feature" data-aos="fade-up" data-aos-delay="200">
             <h3>Ручное тиснение</h3>
             <p>Каждый узор наносится вручную — двух одинаковых изделий не бывает.</p>
         </div>
-        <div class="feature">
+        <div class="feature" data-aos="fade-up" data-aos-delay="300">
             <h3>Индивидуальный заказ</h3>
             <p>Можем сделать тиснение по вашему эскизу: инициалы, логотип, рисунок.</p>
         </div>
     </div>
 </section>
 
-<!-- Каталог
-<section id="catalog" class="catalog">
-    <div class="container">
-        <h2>Наши изделия</h2>
-        <div class="product-grid">
-            {% for product in products %}
-            <div class="product-card">
-                <div class="product-image">
-                    <img src="{{ product.image }}" alt="{{ product.name }}">
-                </div>
-                <div class="product-info">
-                    <h3>{{ product.name }}</h3>
-                    <p>{{ product.description }}</p>
-                    <div class="product-price">{{ product.price }}</div>
-                    <button class="btn btn-outline">Заказать</button>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
--->
-<section id="catalog" class="catalog-slider">
+<!-- Каталог -->
+<section id="catalog" class="catalog-slider" >
     <div class="container">
         <h2>Наши изделия</h2>
         <div class="slider-wrapper">
@@ -63,16 +42,17 @@
                     <div class="slide">
                         <div class="product-card">
                             <div class="product-image">
-    {% if product.image %}
-        {% if product.image.startswith('http') %}
-            <img src="{{ product.image }}" alt="{{ product.name }}">
-        {% else %}
-            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
-        {% endif %}
-    {% else %}
-        <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения">
-    {% endif %}
-</div>
+                                {% if product.image %}
+                                {% if product.image.startswith('http') %}
+                                <img src="{{ product.image }}" alt="{{ product.name }}">
+                                {% else %}
+                                <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+                                {% endif %}
+                                {% else %}
+                                <img src="{{ url_for('static', filename='img/placeholder.png') }}"
+                                     alt="Нет изображения">
+                                {% endif %}
+                            </div>
                             <div class="product-info">
                                 <h3>{{ product.name }}</h3>
                                 <span class="product-type">{{ product.product_type }}</span>

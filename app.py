@@ -5,7 +5,6 @@ from flask_migrate import Migrate
 from models import db, User, Product
 from admin import admin_bp
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 # По умолчанию SQLite для локальной разработки, в продакшене задаётся DATABASE_URL
@@ -15,7 +14,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Настройки для загрузки изображений
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-
 
 db.init_app(app)
 migrate = Migrate(app, db)

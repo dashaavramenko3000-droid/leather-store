@@ -9,6 +9,7 @@ from forms import LoginForm, ProductForm
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+
 def save_image(file):
     if file and file.filename:
         filename = secure_filename(file.filename)
@@ -19,6 +20,7 @@ def save_image(file):
         img.save(file_path, optimize=True, quality=85)
         return 'uploads/' + unique_name
     return None
+
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -34,6 +36,7 @@ def login():
         flash('Неверный логин или пароль', 'danger')
     return render_template('admin/login.html', form=form)
 
+
 @admin_bp.route('/logout')
 @login_required
 def logout():
@@ -41,11 +44,13 @@ def logout():
     flash('Вы вышли из системы', 'info')
     return redirect(url_for('admin.login'))
 
+
 @admin_bp.route('/')
 @login_required
 def dashboard():
     product_count = Product.query.count()
     return render_template('admin/dashboard.html', product_count=product_count)
+
 
 @admin_bp.route('/products')
 @login_required
@@ -56,6 +61,7 @@ def products():
     else:
         products_list = Product.query.all()
     return render_template('admin/products.html', products=products_list, search=search)
+
 
 @admin_bp.route('/products/add', methods=['GET', 'POST'])
 @login_required
@@ -75,6 +81,7 @@ def add_product():
         flash('Товар добавлен', 'success')
         return redirect(url_for('admin.products'))
     return render_template('admin/product_form.html', form=form, title='Добавить товар', product=None)
+
 
 @admin_bp.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
@@ -97,6 +104,7 @@ def edit_product(product_id):
         flash('Товар обновлён', 'success')
         return redirect(url_for('admin.products'))
     return render_template('admin/product_form.html', form=form, title='Редактировать товар', product=product)
+
 
 @admin_bp.route('/products/delete/<int:product_id>')
 @login_required

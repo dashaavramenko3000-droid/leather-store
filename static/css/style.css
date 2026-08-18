@@ -434,7 +434,7 @@ img {
 .contacts-social a:hover {
     background-color: var(--accent);
     color: var(--brown-dark);
-    transform: translateY(-3px);
+    transform: translateY(-3px) rotate(5deg);
 }
 
 /* Стили для слайдера на главной */
@@ -527,4 +527,42 @@ img {
     margin-right: 0;                /* убираем внешний отступ, так как используем gap */
     width: 280px;                   /* фиксированная или адаптивная ширина */
 }
+body {
+    animation: fadeIn 1s ease;
+}
 
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 5px rgba(193, 154, 107, 0.5);
+}
+.btn {
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+.product-image img {
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
