@@ -31,7 +31,7 @@
         {% for error in form.price.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}
     </div>
 
-    <!-- Существующие изображения -->
+    <!-- Существующие изображения (только при редактировании) -->
     {% if product and product.images %}
     <div class="form-group">
         <label>Текущие фотографии:</label>
@@ -52,14 +52,85 @@
     <!-- Загрузка новых изображений -->
     <div class="form-group">
         {{ form.images.label }}<br>
-        {{ form.images(class="form-control") }}
+        {{ form.images(class="form-control", id="images-input") }}
         <small>Можно выбрать несколько файлов (Ctrl+клик).</small>
         {% for error in form.images.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}
     </div>
+
+    <!-- Предпросмотр выбранных изображений с кнопками удаления -->
+    <div id="image-previews" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;"></div>
 
     <div class="form-group" style="margin-top:20px;">
         {{ form.submit(class="btn") }}
         <a href="{{ url_for('admin.products') }}" class="btn" style="background-color:#6c757d;">Отмена</a>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('images-input');
+    const previewsContainer = document.getElementById('image-previews');
+    let selectedFiles = [];
+
+    // Обработчик выбора файлов
+    input.addEventListener('change', function() {
+        selectedFiles = Array.from(input.files);
+        renderPreviews();
+    });
+
+    // Отрисовка миниатюр с кнопками удаления
+    function renderPreviews() {
+        previewsContainer.innerHTML = '';
+        selectedFiles.forEach((file, index) => {
+            if (!file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                wrapper.style.display = 'inline-block';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '120px';
+                img.style.height = '90px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '4px';
+                wrapper.appendChild(img);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.type = 'button';
+                deleteBtn.style.position = 'absolute';
+                deleteBtn.style.top = '5px';
+                deleteBtn.style.right = '5px';
+                deleteBtn.style.background = 'rgba(0,0,0,0.5)';
+                deleteBtn.style.color = 'white';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.borderRadius = '50%';
+                deleteBtn.style.width = '25px';
+                deleteBtn.style.height = '25px';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.title = 'Удалить фото';
+                deleteBtn.addEventListener('click', function() {
+                    selectedFiles.splice(index, 1);
+                    updateInputFiles();
+                    renderPreviews();
+                });
+
+                wrapper.appendChild(deleteBtn);
+                previewsContainer.appendChild(wrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Обновление input.files после удаления
+    function updateInputFiles() {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        input.files = dt.files;
+    }
+});
+</script>
 {% endblock %}
