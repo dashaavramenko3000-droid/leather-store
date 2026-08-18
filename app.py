@@ -32,6 +32,12 @@ def load_user(user_id):
 
 app.register_blueprint(admin_bp)
 
+@app.context_processor
+def cart_total_count():
+    cart = session.get('cart', {})
+    total_qty = sum(cart.values())
+    return {'cart_total': total_qty}
+
 
 @app.route('/')
 def home():

@@ -24,7 +24,7 @@
                 <li><a href="{{ url_for('catalog') }}">Наши изделия</a></li>
                 <li><a href="{{ url_for('home') }}#about">О нас</a></li>
                 <li><a href="{{ url_for('home') }}#contacts">Контакты</a></li>
-                <li><a href="{{ url_for('cart') }}">Корзина ({{ session.get('cart', {})|length }})</a></li>
+                <li><a href="{{ url_for('cart') }}">Корзина ({{ cart_total }})</a></li>
             </ul>
         </nav>
         <div class="header-contacts">
