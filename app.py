@@ -4,7 +4,6 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from models import db, User, Product
 from admin import admin_bp
-from markupsafe import Markup, escape
 
 
 app = Flask(__name__)
