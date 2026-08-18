@@ -38,14 +38,11 @@
         {% if products %}
         <div class="product-grid">
             {% for product in products %}
-            <div class="product-card" >
+            <div class="product-card">
                 <div class="product-image">
-                    {% if product.image %}
-                    {% if product.image.startswith('http') %}
-                    <img src="{{ product.image }}" alt="{{ product.name }}">
-                    {% else %}
-                    <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
-                    {% endif %}
+                    {% set main_image = product.images|sort(attribute='order')|first %}
+                    {% if main_image %}
+                    <img src="{{ url_for('static', filename=main_image.image_path) }}" alt="{{ product.name }}">
                     {% else %}
                     <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения">
                     {% endif %}
