@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная — Кожаная мастерская «Тиснение»{% endblock %}
+
+{% block content %}
+<!-- Hero секция -->
+<section class="hero">
+    <div class="container">
+        <h1>Изделия из кожи<br>с ручным тиснением</h1>
+        <p>Создаём уникальные аксессуары, которые хранят тепло рук мастера</p>
+        <a href="#catalog" class="btn">Смотреть каталог</a>
+    </div>
+</section>
+
+<!-- Преимущества -->
+<section class="features">
+    <div class="container features-grid">
+        <div class="feature">
+            <h3>Натуральная кожа</h3>
+            <p>Используем только кожу растительного дубления высшего качества.</p>
+        </div>
+        <div class="feature">
+            <h3>Ручное тиснение</h3>
+            <p>Каждый узор наносится вручную — двух одинаковых изделий не бывает.</p>
+        </div>
+        <div class="feature">
+            <h3>Индивидуальный заказ</h3>
+            <p>Можем сделать тиснение по вашему эскизу: инициалы, логотип, рисунок.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Каталог
+<section id="catalog" class="catalog">
+    <div class="container">
+        <h2>Наши изделия</h2>
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="{{ product.image }}" alt="{{ product.name }}">
+                </div>
+                <div class="product-info">
+                    <h3>{{ product.name }}</h3>
+                    <p>{{ product.description }}</p>
+                    <div class="product-price">{{ product.price }}</div>
+                    <button class="btn btn-outline">Заказать</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+-->
+<section id="catalog" class="catalog-slider">
+    <div class="container">
+        <h2>Наши изделия</h2>
+        <div class="slider-wrapper">
+            <button class="slider-btn prev" aria-label="Предыдущий">&#10094;</button>
+            <div class="slider-viewport">
+                <div class="slider-track">
+                    {% for product in products %}
+                    <div class="slide">
+                        <div class="product-card">
+                            <div class="product-image">
+    {% if product.image %}
+        {% if product.image.startswith('http') %}
+            <img src="{{ product.image }}" alt="{{ product.name }}">
+        {% else %}
+            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+        {% endif %}
+    {% else %}
+        <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения">
+    {% endif %}
+</div>
+                            <div class="product-info">
+                                <h3>{{ product.name }}</h3>
+                                <span class="product-type">{{ product.product_type }}</span>
+                                <p>{{ product.description }}</p>
+                                <button class="btn btn-outline">Заказать</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="slider-btn next" aria-label="Следующий">&#10095;</button>
+        </div>
+    </div>
+</section>
+
+<!-- О нас -->
+<section id="about" class="about">
+    <div class="container about-inner">
+        <div class="about-text">
+            <h2>О мастерской</h2>
+            <p>Мы — небольшая семейная мастерская, которая уже более 10 лет создаёт изделия из натуральной кожи. Наше
+                главное увлечение — ручное тиснение. Каждый узор, каждая линия наносится вручную специальными
+                инструментами, поэтому каждое изделие уникально.</p>
+            <p>Мы любим своё дело и вкладываем душу в каждую работу. Наши клиенты возвращаются к нам снова и рекомендуют
+                друзьям.</p>
+        </div>
+        <div class="about-image">
+            <img src="https://placehold.co/500x400/5a3e2b/ffffff?text=Мастерская" alt="Мастерская">
+        </div>
+    </div>
+</section>
+
+<!-- Контакты -->
+<section id="contacts" class="contacts">
+    <div class="container">
+        <h2>Контакты</h2>
+        <div class="contacts-grid">
+            <div>
+                <h3>Адрес</h3>
+                <p>г. Москва, ул. Кожевенная, д. 5</p>
+            </div>
+            <div>
+                <h3>Телефон</h3>
+                <p><a href="tel:+79991234567">+7 (999) 123-45-67</a></p>
+            </div>
+            <div>
+                <h3>Email</h3>
+                <p><a href="mailto:info@leather-store.ru">info@leather-store.ru</a></p>
+            </div>
+
+            <div>
+                <h3>Мы в соц. сетях</h3>
+                <div class="contacts-social">
+
+                    <a href="https://t.me/your_channel" target="_blank" aria-label="Telegram"><i
+                            class="fab fa-telegram-plane"></i></a>
+                    <a href="https://instagram.com/your_profile" target="_blank" aria-label="Instagram"><i
+                            class="fab fa-instagram"></i></a>
+                    <a href="https://tiktok.com/@your_profile" target="_blank" aria-label="TikTok"><i
+                            class="fab fa-tiktok"></i></a>
+                    <a href="https://youtube.com/@your_channel" target="_blank" aria-label="YouTube"><i
+                            class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            <div>
+                <h3>Режим работы</h3>
+                <p>Пн–Сб: 10:00 – 20:00</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

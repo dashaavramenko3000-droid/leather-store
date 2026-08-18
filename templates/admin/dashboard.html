@@ -1,0 +1,9 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Панель управления{% endblock %}
+
+{% block content %}
+<h2>Панель управления</h2>
+<p>Всего товаров: <strong>{{ product_count }}</strong></p>
+<a href="{{ url_for('admin.products') }}" class="btn">Управление товарами</a>
+{% endblock %}

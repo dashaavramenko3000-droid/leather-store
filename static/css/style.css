@@ -1,0 +1,530 @@
+:root {
+    --brown-dark: #2c1e14;
+    --brown-medium: #5a3e2b;
+    --brown-light: #8b6b4a;
+    --beige: #e8d5b7;
+    --cream: #f9f2e7;
+    --accent: #c19a6b;
+    --text: #3b2a1a;
+    --white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text);
+    background-color: var(--cream);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Header */
+.site-header {
+    background-color: var(--brown-dark);
+    color: var(--cream);
+    padding: 15px 0;
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.logo a {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    color: var(--beige);
+}
+
+.logo span {
+    font-size: 1.2rem;
+    color: var(--accent);
+}
+
+.main-nav ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+.main-nav a {
+    color: var(--cream);
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.main-nav a:hover {
+    color: var(--accent);
+}
+
+.header-contacts a {
+    color: var(--accent);
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+/* Hero */
+.hero {
+    background: linear-gradient(rgba(44, 30, 20, 0.7), rgba(44, 30, 20, 0.7)),
+                url('https://placehold.co/1600x800/5a3e2b/ffffff?text=Кожа+и+тиснение') center/cover no-repeat;
+    color: var(--white);
+    padding: 120px 0;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+.btn {
+    display: inline-block;
+    background-color: var(--accent);
+    color: var(--brown-dark);
+    padding: 12px 30px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn:hover {
+    background-color: var(--beige);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+}
+
+.btn-outline:hover {
+    background-color: var(--accent);
+    color: var(--brown-dark);
+}
+
+/* Features */
+.features {
+    padding: 60px 0;
+    background-color: var(--white);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    text-align: center;
+}
+
+.feature h3 {
+    color: var(--brown-medium);
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.feature p {
+    color: #666;
+}
+
+/* Catalog */
+.catalog {
+    padding: 80px 0;
+}
+
+.catalog h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 50px;
+    color: var(--brown-dark);
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.product-card {
+    background-color: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.product-image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.product-info {
+    padding: 20px;
+}
+
+.product-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: var(--brown-dark);
+}
+
+.product-info p {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    word-break: break-word;      /* перенос длинных слов */
+    overflow-wrap: break-word;   /* современный аналог */
+    hyphens: auto;               /* перенос по слогам (если поддерживается) */
+    max-width: 45ch;             /* ограничение ширины примерно 45 символами */
+}
+
+.product-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--brown-medium);
+    margin-bottom: 15px;
+}
+
+/* About */
+.about {
+    background-color: var(--white);
+    padding: 80px 0;
+}
+
+.about-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+}
+
+.about-text h2 {
+    font-size: 2.5rem;
+    color: var(--brown-dark);
+    margin-bottom: 20px;
+}
+
+.about-text p {
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.about-image img {
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Contacts */
+.contacts {
+    padding: 80px 0;
+    background-color: var(--beige);
+}
+
+.contacts h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 50px;
+    color: var(--brown-dark);
+}
+
+.contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    text-align: center;
+}
+
+.contacts-grid h3 {
+    color: var(--brown-medium);
+    margin-bottom: 10px;
+}
+
+.contacts-grid a {
+    color: var(--brown-dark);
+    font-weight: 500;
+}
+
+.contacts-grid a:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+.site-footer {
+    background-color: var(--brown-dark);
+    color: var(--cream);
+    padding: 30px 0;
+    text-align: center;
+}
+
+.footer-inner p {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+    .main-nav ul {
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .hero h1 {
+        font-size: 2rem;
+    }
+    .about-inner {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Стили для страницы каталога и фильтров */
+.catalog-page h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: var(--brown-dark);
+}
+
+.filters {
+    background-color: var(--white);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: var(--brown-medium);
+    font-size: 0.9rem;
+}
+
+.filter-group select,
+.filter-group input[type="number"] {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    min-width: 150px;
+}
+
+.no-products {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    padding: 40px 0;
+}
+
+
+/* Кнопка "Наверх" */
+#scrollToTopBtn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    width: 50px;
+    height: 50px;
+    background-color: var(--brown-medium);
+    color: var(--cream);
+    border: none;
+    border-radius: 50%;
+    font-size: 1.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s, background-color 0.3s;
+}
+
+#scrollToTopBtn:hover {
+    background-color: var(--accent);
+    color: var(--brown-dark);
+}
+
+#scrollToTopBtn.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+
+/* Стили для соцсетей в блоке контактов */
+.contacts-social {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.contacts-social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background-color: var(--brown-medium);
+    color: var(--cream);
+    border-radius: 50%;
+    font-size: 1.5rem;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+}
+
+.contacts-social a:hover {
+    background-color: var(--accent);
+    color: var(--brown-dark);
+    transform: translateY(-3px);
+}
+
+/* Стили для слайдера на главной */
+.catalog-slider {
+    padding: 80px 0;
+    background-color: var(--white);
+}
+
+.catalog-slider h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: var(--brown-dark);
+}
+
+.slider-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.slider-viewport {
+    overflow: hidden;
+    flex: 1;
+}
+
+.slider-track {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.slide {
+    flex: 0 0 auto;
+    width: 320px;
+    margin-right: 25px;
+}
+
+.slide:last-child {
+    margin-right: 0;
+}
+
+.slider-btn {
+    width: 50px;
+    height: 50px;
+    background-color: var(--brown-medium);
+    color: var(--cream);
+    border: none;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s, transform 0.3s;
+    flex-shrink: 0;
+}
+
+.slider-btn:hover {
+    background-color: var(--accent);
+    color: var(--brown-dark);
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .slide {
+        width: 260px;
+    }
+    .slider-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+}
+
+/* Режим без прокрутки (когда слайдов ≤ 3) */
+.slider-viewport.no-slider {
+    overflow: visible;              /* показываем все слайды */
+}
+
+.slider-viewport.no-slider .slider-track {
+    transform: none !important;     /* убираем сдвиг */
+    flex-wrap: wrap;                /* разрешаем перенос на новую строку при нехватке места */
+    gap: 25px;                      /* расстояние между карточками */
+    justify-content: center;        /* выравнивание по центру */
+}
+
+/* Можно также скорректировать ширину слайдов в статичном режиме */
+.slider-viewport.no-slider .slide {
+    margin-right: 0;                /* убираем внешний отступ, так как используем gap */
+    width: 280px;                   /* фиксированная или адаптивная ширина */
+}
+
