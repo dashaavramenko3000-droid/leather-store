@@ -6,6 +6,7 @@ from models import db, User, Product
 from admin import admin_bp
 from markupsafe import Markup, escape
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 # По умолчанию SQLite для локальной разработки, в продакшене задаётся DATABASE_URL
