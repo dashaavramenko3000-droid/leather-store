@@ -40,6 +40,7 @@
     {% endif %}
 </td>
             <td>{{ product.name }}</td>
+            <td>{{ product.product_type }}</td>
             <td>{{ product.price }} ₽</td>
             <td>
                 <a href="{{ url_for('admin.edit_product', product_id=product.id) }}" class="btn btn-sm">Изменить</a>
