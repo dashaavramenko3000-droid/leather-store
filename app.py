@@ -2,8 +2,9 @@ import os
 from flask import Flask, render_template, request
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from models import db, User, Product
+from models import db, User, Product, Order, OrderItem
 from admin import admin_bp
+from flask import session, redirect, url_for, flash, request
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
@@ -26,7 +27,7 @@ login_manager.login_message = 'Пожалуйста, войдите для до�
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 app.register_blueprint(admin_bp)
@@ -84,6 +85,122 @@ with app.app_context():
 # Создание папки для загрузок
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
+
+
+@app.route('/add_to_cart/<int:product_id>', methods=['POST'])
+def add_to_cart(product_id):
+    product = db.session.get(Product, product_id)  # или Product.query.get_or_404
+    if not product:
+        flash('Товар не найден', 'danger')
+        return redirect(url_for('catalog'))
+    cart = session.get('cart', {})
+    cart[str(product_id)] = cart.get(str(product_id), 0) + 1
+    session['cart'] = cart
+    flash(f'Товар "{product.name}" добавлен в корзину', 'success')
+    return redirect(request.referrer or url_for('catalog'))
+
+
+@app.route('/cart')
+def cart():
+    cart = session.get('cart', {})
+    cart_items = []
+    total = 0
+    for product_id, qty in cart.items():
+        product = Product.query.get(int(product_id))
+        if product:
+            subtotal = product.price * qty
+            total += subtotal
+            cart_items.append({
+                'product': product,
+                'quantity': qty,
+                'subtotal': subtotal
+            })
+    return render_template('cart.html', cart_items=cart_items, total=total)
+
+
+@app.route('/update_cart/<int:product_id>', methods=['POST'])
+def update_cart(product_id):
+    cart = session.get('cart', {})
+    qty = int(request.form.get('quantity', 1))
+    if qty <= 0:
+        cart.pop(str(product_id), None)
+    else:
+        cart[str(product_id)] = qty
+    session['cart'] = cart
+    return redirect(url_for('cart'))
+
+
+@app.route('/remove_from_cart/<int:product_id>')
+def remove_from_cart(product_id):
+    cart = session.get('cart', {})
+    cart.pop(str(product_id), None)
+    session['cart'] = cart
+    return redirect(url_for('cart'))
+
+
+@app.route('/checkout', methods=['GET', 'POST'])
+def checkout():
+    cart = session.get('cart', {})
+    if not cart:
+        flash('Ваша корзина пуста', 'info')
+        return redirect(url_for('catalog'))
+    form = CheckoutForm()
+    if form.validate_on_submit():
+        # Создаём заказ
+        total = 0
+        items = []
+        for product_id, qty in cart.items():
+            product = Product.query.get(int(product_id))
+            if product:
+                total += product.price * qty
+                items.append({
+                    'product': product,
+                    'quantity': qty,
+                    'subtotal': product.price * qty
+                })
+        order = Order(
+            customer_name=form.customer_name.data,
+            customer_email=form.customer_email.data,
+            customer_phone=form.customer_phone.data,
+            address=form.address.data,
+            total_price=total
+        )
+        db.session.add(order)
+        db.session.flush()  # получить id заказа
+        for item in items:
+            order_item = OrderItem(
+                order_id=order.id,
+                product_id=item['product'].id,
+                product_name=item['product'].name,
+                price=item['product'].price,
+                quantity=item['quantity']
+            )
+            db.session.add(order_item)
+        db.session.commit()
+        session.pop('cart', None)  # очищаем корзину
+        flash('Заказ успешно оформлен! Мы свяжемся с вами.', 'success')
+        return redirect(url_for('order_confirmation', order_id=order.id))
+    # Если GET или ошибки валидации, показываем форму
+    cart_items = []
+    total = 0
+    for product_id, qty in cart.items():
+        product = Product.query.get(int(product_id))
+        if product:
+            subtotal = product.price * qty
+            total += subtotal
+            cart_items.append({
+                'product': product,
+                'quantity': qty,
+                'subtotal': subtotal
+            })
+    return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
+
+
+@app.route('/order_confirmation/<int:order_id>')
+def order_confirmation(order_id):
+    order = Order.query.get_or_404(order_id)
+    return render_template('order_confirmation.html', order=order)
+
 
 if __name__ == '__main__':
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'

@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -38,3 +39,27 @@ class ProductImage(db.Model):
 
     def __repr__(self):
         return f'<ProductImage {self.image_path}>'
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_name = db.Column(db.String(100), nullable=False)
+    customer_email = db.Column(db.String(120), nullable=False)
+    customer_phone = db.Column(db.String(30), nullable=False)
+    address = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    total_price = db.Column(db.Integer, nullable=False)  # в рублях
+    items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Order {self.id}>'
+
+class OrderItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product_name = db.Column(db.String(200), nullable=False)  # фиксируем название на момент заказа
+    price = db.Column(db.Integer, nullable=False)  # цена за единицу
+    quantity = db.Column(db.Integer, nullable=False)
+
+    # Связь с товаром (если нужно)
+    product = db.relationship('Product', backref='order_items')

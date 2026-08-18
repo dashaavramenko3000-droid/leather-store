@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Корзина</h1>
+    {% if cart_items %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Фото</th>
+            <th>Название</th>
+            <th>Цена</th>
+            <th>Количество</th>
+            <th>Сумма</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in cart_items %}
+        <tr>
+            <td>
+                {% set main_image = item.product.images|sort(attribute='order')|first %}
+                {% if main_image %}
+                <img src="{{ url_for('static', filename=main_image.image_path) }}"
+                     style="width: 60px; height: 45px; object-fit: cover;">
+                {% else %}
+                <span>Нет фото</span>
+                {% endif %}
+            </td>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.product.price }} ₽</td>
+            <td>
+                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post"
+                      style="display: inline-flex; gap: 5px;">
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 60px;">
+                    <button type="submit" class="btn btn-sm">Обновить</button>
+                </form>
+            </td>
+            <td>{{ item.subtotal }} ₽</td>
+            <td>
+                <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="btn btn-sm"
+                   style="background-color:#a94442; color:white;">Удалить</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Итого: {{ total }} ₽</h3>
+        <a href="{{ url_for('checkout') }}" class="btn">Оформить заказ</a>
+    </div>
+    {% else %}
+    <p>Ваша корзина пуста. <a href="{{ url_for('catalog') }}">Перейти в каталог</a></p>
+    {% endif %}
+</div>
+{% endblock %}
