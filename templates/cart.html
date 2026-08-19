@@ -3,56 +3,104 @@
 {% block title %}Корзина{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Корзина</h1>
+<!-- Контейнер Bootstrap с вертикальными отступами -->
+<div class="container my-5">
+    <!-- Заголовок -->
+    <h1 class="text-center mb-4">Корзина</h1>
+
     {% if cart_items %}
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Фото</th>
-            <th>Название</th>
-            <th>Цена</th>
-            <th>Количество</th>
-            <th>Сумма</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for item in cart_items %}
-        <tr>
-            <td>
-                {% set main_image = item.product.images|sort(attribute='order')|first %}
-                {% if main_image %}
-                <img src="{{ url_for('static', filename=main_image.image_path) }}"
-                     style="width: 60px; height: 45px; object-fit: cover;">
-                {% else %}
-                <span>Нет фото</span>
-                {% endif %}
-            </td>
-            <td>{{ item.product.name }}</td>
-            <td>{{ item.product.price }} ₽</td>
-            <td>
-                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post"
-                      style="display: inline-flex; gap: 5px;">
-                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 60px;">
-                    <button type="submit" class="btn btn-sm">Обновить</button>
-                </form>
-            </td>
-            <td>{{ item.subtotal }} ₽</td>
-            <td>
-                <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="btn btn-sm"
-                   style="background-color:#a94442; color:white;">Удалить</a>
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3>Итого: {{ total }} ₽</h3>
-        <a href="{{ url_for('checkout') }}" class="btn">Оформить заказ</a>
+    <!-- Если корзина не пуста, используем сетку -->
+    <div class="row g-4">
+        <!-- Левая колонка: список товаров (8 колонок на десктопе) -->
+        <div class="col-lg-8">
+            {% for item in cart_items %}
+            <!-- Карточка товара -->
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <!-- Внутри карточки – сетка для выравнивания -->
+                    <div class="row align-items-center">
+                        <!-- Изображение -->
+                        <div class="col-3 col-md-2">
+                            {% set main_image = item.product.images|sort(attribute='order')|first %}
+                            {% if main_image %}
+                                <img src="{{ url_for('static', filename=main_image.image_path) }}" class="img-fluid rounded" alt="{{ item.product.name }}">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='img/placeholder.png') }}" class="img-fluid rounded" alt="Нет изображения">
+                            {% endif %}
+                        </div>
+                        <!-- Информация о товаре -->
+                        <div class="col-9 col-md-4">
+                            <h5 class="card-title mb-1">{{ item.product.name }}</h5>
+                            <p class="text-muted mb-1">{{ item.product.product_type }}</p>
+                            <p class="fw-bold mb-0">{{ item.product.price }} ₽ / шт.</p>
+                        </div>
+                        <!-- Управление количеством -->
+                        <div class="col-7 col-md-3 mt-3 mt-md-0">
+                            <div class="input-group input-group-sm">
+                                <!-- Кнопка уменьшения -->
+                                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post" class="me-1">
+                                    <input type="hidden" name="quantity" value="{{ item.quantity - 1 }}">
+                                    <button type="submit" class="btn btn-outline-secondary" {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
+                                </form>
+                                <!-- Текущее количество -->
+                                <span class="align-self-center mx-2 fw-bold">{{ item.quantity }}</span>
+                                <!-- Кнопка увеличения -->
+                                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post" class="ms-1">
+                                    <input type="hidden" name="quantity" value="{{ item.quantity + 1 }}">
+                                    <button type="submit" class="btn btn-outline-secondary">+</button>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- Подытог -->
+                        <div class="col-5 col-md-2 text-end mt-3 mt-md-0">
+                            <span class="fw-bold fs-5">{{ item.subtotal }} ₽</span>
+                        </div>
+                        <!-- Кнопка удаления -->
+                        <div class="col-12 col-md-1 text-end">
+                            <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="btn btn-outline-danger btn-sm" title="Удалить">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Правая колонка: сводка заказа (4 колонки) -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Сводка заказа</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Товары ({{ cart_items|length }})</span>
+                        <span>{{ total }} ₽</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Доставка</span>
+                        <span>Рассчитывается при оформлении</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fs-5 fw-bold">
+                        <span>Итого</span>
+                        <span>{{ total }} ₽</span>
+                    </div>
+                    <a href="{{ url_for('checkout') }}" class="btn btn-primary w-100 mt-3">Оформить заказ</a>
+                    <a href="{{ url_for('catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить покупки</a>
+                </div>
+            </div>
+        </div>
     </div>
     {% else %}
-    <p>Ваша корзина пуста. <a href="{{ url_for('catalog') }}">Перейти в каталог</a></p>
+    <!-- Если корзина пуста -->
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
+        <h2>Ваша корзина пуста</h2>
+        <p class="text-muted">Добавьте товары из каталога, чтобы сделать заказ.</p>
+        <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-lg">Перейти в каталог</a>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
