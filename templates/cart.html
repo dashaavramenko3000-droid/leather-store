@@ -23,9 +23,11 @@
                         <div class="col-3 col-md-2">
                             {% set main_image = item.product.images|sort(attribute='order')|first %}
                             {% if main_image %}
-                                <img src="{{ url_for('static', filename=main_image.image_path) }}" class="img-fluid rounded" alt="{{ item.product.name }}">
+                            <img src="{{ url_for('static', filename=main_image.image_path) }}" class="img-fluid rounded"
+                                 alt="{{ item.product.name }}">
                             {% else %}
-                                <img src="{{ url_for('static', filename='img/placeholder.png') }}" class="img-fluid rounded" alt="Нет изображения">
+                            <img src="{{ url_for('static', filename='img/placeholder.png') }}" class="img-fluid rounded"
+                                 alt="Нет изображения">
                             {% endif %}
                         </div>
                         <!-- Информация о товаре -->
@@ -35,29 +37,29 @@
                             <p class="fw-bold mb-0">{{ item.product.price }} ₽ / шт.</p>
                         </div>
                         <!-- Управление количеством -->
-                        <div class="col-7 col-md-3 mt-3 mt-md-0">
-                            <div class="input-group input-group-sm">
-                                <!-- Кнопка уменьшения -->
-                                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post" class="me-1">
+                        <div class="col-8 col-md-3 mt-3 mt-md-0">
+                            <div class="quantity-control d-flex align-items-center gap-1">
+                                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post"
+                                      class="m-0">
                                     <input type="hidden" name="quantity" value="{{ item.quantity - 1 }}">
-                                    <button type="submit" class="btn btn-outline-secondary" {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm qty-btn" {% if
+                                            item.quantity
+                                    <= 1 %}disabled{% endif %}>−</button>
                                 </form>
-                                <!-- Текущее количество -->
-                                <span class="align-self-center mx-2 fw-bold">{{ item.quantity }}</span>
-                                <!-- Кнопка увеличения -->
-                                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post" class="ms-1">
+                                <span class="fw-bold mx-1">{{ item.quantity }}</span>
+                                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post"
+                                      class="m-0">
                                     <input type="hidden" name="quantity" value="{{ item.quantity + 1 }}">
-                                    <button type="submit" class="btn btn-outline-secondary">+</button>
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm qty-btn">+</button>
                                 </form>
                             </div>
                         </div>
-                        <!-- Подытог -->
-                        <div class="col-5 col-md-2 text-end mt-3 mt-md-0">
-                            <span class="fw-bold fs-5">{{ item.subtotal }} ₽</span>
+                        <div class="col-4 col-md-2 text-end mt-3 mt-md-0">
+                            <span class="fw-bold fs-6">{{ item.subtotal }} ₽</span>
                         </div>
-                        <!-- Кнопка удаления -->
-                        <div class="col-12 col-md-1 text-end">
-                            <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="btn btn-outline-danger btn-sm" title="Удалить">
+                        <div class="col-12 col-md-1 text-end mt-2 mt-md-0">
+                            <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}"
+                               class="btn btn-outline-danger btn-sm remove-btn" title="Удалить">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </div>

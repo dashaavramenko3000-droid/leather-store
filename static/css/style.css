@@ -691,3 +691,57 @@ img {
     display: block;
     margin-top: 5px;
 }
+/* Компактные кнопки + и - */
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+    border-radius: 4px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.qty-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Кнопка удаления — компактная иконка */
+.remove-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.remove-btn i {
+    pointer-events: none;
+}
+
+/* Убираем лишние поля у форм внутри количества */
+.quantity-control form {
+    margin: 0;
+}
+
+/* Если кнопка удаления всё ещё выходит, можно добавить media query */
+@media (max-width: 768px) {
+    .remove-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    .qty-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.9rem;
+    }
+}
