@@ -34,7 +34,7 @@ if (scrollToTopBtn) {
 }
 
 // Слайдер на главной странице
-(function() {
+(function () {
     const track = document.querySelector('.slider-track');
     if (!track) return;
 
@@ -162,3 +162,29 @@ if (scrollToTopBtn) {
         initSlider();
     });
 })();
+// Управление лоадером страницы
+const pageLoader = document.getElementById('page-loader');
+
+function showLoader() {
+    if (pageLoader) pageLoader.classList.add('show');
+}
+
+function hideLoader() {
+    if (pageLoader) pageLoader.classList.remove('show');
+}
+
+// Показываем лоадер при уходе со страницы
+window.addEventListener('beforeunload', showLoader);
+
+// Скрываем лоадер после полной загрузки новой страницы
+window.addEventListener('load', function () {
+    // Небольшая задержка, чтобы лоадер не мигал
+    setTimeout(hideLoader, 300);
+});
+
+// Также показываем лоадер при отправке форм (POST)
+document.addEventListener('submit', function (e) {
+    // Игнорируем формы с AJAX (если есть)
+    if (e.target.closest('form[data-ajax="true"]')) return;
+    showLoader();
+});
