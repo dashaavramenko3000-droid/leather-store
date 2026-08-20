@@ -14,6 +14,7 @@
     padding: 0;
     box-sizing: border-box;
 }
+
 :root {
     --brown-dark: #2c1e14;
     --brown-medium: #5a3e2b;
@@ -30,23 +31,28 @@
     border-color: var(--accent);
     color: var(--brown-dark);
 }
+
 .btn-primary:hover, .btn-primary:focus {
     background-color: var(--brown-light);
     border-color: var(--brown-light);
     color: #fff;
 }
+
 .btn-outline-primary {
     border-color: var(--accent);
     color: var(--accent);
 }
+
 .btn-outline-primary:hover {
     background-color: var(--accent);
     border-color: var(--accent);
     color: var(--brown-dark);
 }
+
 .bg-light {
     background-color: var(--cream) !important;
 }
+
 .text-primary {
     color: var(--brown-medium) !important;
 }
@@ -189,11 +195,13 @@ img {
     .header-cart {
         margin-left: auto;
     }
+
     .header-cart a {
         width: 35px;
         height: 35px;
         font-size: 1.2rem;
     }
+
     .cart-count {
         width: 18px;
         height: 18px;
@@ -691,6 +699,7 @@ img {
     display: block;
     margin-top: 5px;
 }
+
 /* Компактные кнопки + и - */
 .qty-btn {
     width: 28px;
@@ -739,12 +748,14 @@ img {
         height: 28px;
         font-size: 0.8rem;
     }
+
     .qty-btn {
         width: 24px;
         height: 24px;
         font-size: 0.9rem;
     }
 }
+
 .page-transition {
     animation: fadeInPage 0.5s ease-out;
 }
@@ -759,6 +770,7 @@ img {
         transform: translateY(0);
     }
 }
+
 /* === Лоадер загрузки страницы === */
 #page-loader {
     position: fixed;
@@ -791,6 +803,10 @@ img {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }

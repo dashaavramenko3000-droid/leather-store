@@ -3,10 +3,12 @@ from flask_wtf.file import MultipleFileField, FileAllowed
 from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp
 
+
 class LoginForm(FlaskForm):
     username = StringField('Логин', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     submit = SubmitField('Войти')
+
 
 class ProductForm(FlaskForm):
     name = StringField('Название', validators=[DataRequired(), Length(max=200)])
@@ -22,6 +24,7 @@ class ProductForm(FlaskForm):
         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')
     ])
     submit = SubmitField('Сохранить')
+
 
 class CheckoutForm(FlaskForm):
     customer_name = StringField('Имя', validators=[

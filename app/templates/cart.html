@@ -80,7 +80,8 @@
                         <span id="cart-total">{{ total }} ₽</span>
                     </div>
                     <a href="{{ url_for('main.checkout')}}" class="btn btn-primary w-100 mt-3">Оформить заказ</a>
-                    <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить покупки</a>
+                    <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить
+                        покупки</a>
                 </div>
             </div>
         </div>
@@ -147,8 +148,8 @@
         fetch(`/cart/remove_ajax/${productId}`, {
             method: 'POST',
             headers: {
-            'X-CSRFToken': csrfToken
-        }
+                'X-CSRFToken': csrfToken
+            }
         })
             .then(response => response.json())
             .then(data => {

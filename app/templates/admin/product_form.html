@@ -38,7 +38,8 @@
         <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
             {% for img in product.images|sort(attribute='order') %}
             <div style="text-align: center;">
-                <img src="{{ url_for('static', filename=img.image_path) }}" style="width: 120px; height: 90px; object-fit: cover; border-radius: 4px;">
+                <img src="{{ url_for('static', filename=img.image_path) }}"
+                     style="width: 120px; height: 90px; object-fit: cover; border-radius: 4px;">
                 <br>
                 <label>
                     <input type="checkbox" name="delete_images" value="{{ img.id }}"> Удалить
@@ -67,70 +68,70 @@
 </form>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const input = document.getElementById('images-input');
-    const previewsContainer = document.getElementById('image-previews');
-    let selectedFiles = [];
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('images-input');
+        const previewsContainer = document.getElementById('image-previews');
+        let selectedFiles = [];
 
-    // Обработчик выбора файлов
-    input.addEventListener('change', function() {
-        selectedFiles = Array.from(input.files);
-        renderPreviews();
-    });
-
-    // Отрисовка миниатюр с кнопками удаления
-    function renderPreviews() {
-        previewsContainer.innerHTML = '';
-        selectedFiles.forEach((file, index) => {
-            if (!file.type.startsWith('image/')) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const wrapper = document.createElement('div');
-                wrapper.style.position = 'relative';
-                wrapper.style.display = 'inline-block';
-
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.width = '120px';
-                img.style.height = '90px';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '4px';
-                wrapper.appendChild(img);
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '&times;';
-                deleteBtn.type = 'button';
-                deleteBtn.style.position = 'absolute';
-                deleteBtn.style.top = '5px';
-                deleteBtn.style.right = '5px';
-                deleteBtn.style.background = 'rgba(0,0,0,0.5)';
-                deleteBtn.style.color = 'white';
-                deleteBtn.style.border = 'none';
-                deleteBtn.style.borderRadius = '50%';
-                deleteBtn.style.width = '25px';
-                deleteBtn.style.height = '25px';
-                deleteBtn.style.cursor = 'pointer';
-                deleteBtn.title = 'Удалить фото';
-                deleteBtn.addEventListener('click', function() {
-                    selectedFiles.splice(index, 1);
-                    updateInputFiles();
-                    renderPreviews();
-                });
-
-                wrapper.appendChild(deleteBtn);
-                previewsContainer.appendChild(wrapper);
-            };
-            reader.readAsDataURL(file);
+        // Обработчик выбора файлов
+        input.addEventListener('change', function () {
+            selectedFiles = Array.from(input.files);
+            renderPreviews();
         });
-    }
 
-    // Обновление input.files после удаления
-    function updateInputFiles() {
-        const dt = new DataTransfer();
-        selectedFiles.forEach(file => dt.items.add(file));
-        input.files = dt.files;
-    }
-});
+        // Отрисовка миниатюр с кнопками удаления
+        function renderPreviews() {
+            previewsContainer.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                if (!file.type.startsWith('image/')) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.position = 'relative';
+                    wrapper.style.display = 'inline-block';
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '120px';
+                    img.style.height = '90px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '4px';
+                    wrapper.appendChild(img);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.innerHTML = '&times;';
+                    deleteBtn.type = 'button';
+                    deleteBtn.style.position = 'absolute';
+                    deleteBtn.style.top = '5px';
+                    deleteBtn.style.right = '5px';
+                    deleteBtn.style.background = 'rgba(0,0,0,0.5)';
+                    deleteBtn.style.color = 'white';
+                    deleteBtn.style.border = 'none';
+                    deleteBtn.style.borderRadius = '50%';
+                    deleteBtn.style.width = '25px';
+                    deleteBtn.style.height = '25px';
+                    deleteBtn.style.cursor = 'pointer';
+                    deleteBtn.title = 'Удалить фото';
+                    deleteBtn.addEventListener('click', function () {
+                        selectedFiles.splice(index, 1);
+                        updateInputFiles();
+                        renderPreviews();
+                    });
+
+                    wrapper.appendChild(deleteBtn);
+                    previewsContainer.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Обновление input.files после удаления
+        function updateInputFiles() {
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            input.files = dt.files;
+        }
+    });
 </script>
 {% endblock %}

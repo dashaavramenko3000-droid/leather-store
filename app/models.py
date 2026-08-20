@@ -24,7 +24,8 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Integer, nullable=False)  # Цена в рублях
     product_type = db.Column(db.String(50), nullable=False, default='Кошелёк')
-    images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan', order_by='ProductImage.order')
+    images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan',
+                             order_by='ProductImage.order')
 
     def __repr__(self):
         return f'<Product {self.name}>'

@@ -4,10 +4,12 @@ from PIL import Image
 from werkzeug.utils import secure_filename
 from flask import current_app
 
+
 def create_upload_folder(app):
     """Создаёт папку для загрузок, если её нет"""
     upload_path = os.path.join(app.config['UPLOAD_FOLDER'])
     os.makedirs(upload_path, exist_ok=True)
+
 
 def save_image(file):
     """Сохраняет изображение в папку uploads, сжимает и возвращает относительный путь."""
@@ -27,6 +29,7 @@ def save_image(file):
         return None
 
     return 'uploads/' + unique_name
+
 
 def delete_image_file(image_path):
     """Удаляет файл изображения с диска."""
