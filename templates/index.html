@@ -55,7 +55,8 @@
                                 <h3>{{ product.name }}</h3>
                                 <span class="product-type">{{ product.product_type }}</span>
                                 <p>{{ product.description }}</p>
-                                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post">
+                                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post"
+                                      hx-boost="false">
                                     <button type="submit" class="btn btn-outline">В корзину</button>
                                 </form>
                             </div>

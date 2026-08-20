@@ -1,11 +1,10 @@
 import os
-from flask import Flask, render_template, request
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from models import db, User, Product, Order, OrderItem
 from admin import admin_bp
-from flask import session, redirect, url_for, flash, request
 from forms import CheckoutForm
+from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify, abort
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
@@ -16,6 +15,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Настройки для загрузки изображений
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+from flask_caching import Cache
+
+cache = Cache(app, config={
+    'CACHE_TYPE': 'SimpleCache',  # или 'FileSystemCache' для продакшена
+    'CACHE_DEFAULT_TIMEOUT': 300  # 5 минут
+})
 
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -42,6 +48,7 @@ def cart_total_count():
 
 
 @app.route('/')
+@cache.cached(timeout=60)
 def home():
     types = db.session.query(Product.product_type).distinct().all()
     latest_by_type = []
@@ -53,6 +60,7 @@ def home():
 
 
 @app.route('/catalog')
+@cache.cached(timeout=60, query_string=True)
 def catalog():
     product_type = request.args.get('type', '')
     min_price = request.args.get('min_price', type=int)
@@ -69,6 +77,16 @@ def catalog():
 
     products = query.all()
     types = [t[0] for t in db.session.query(Product.product_type).distinct().all()]
+
+    # Если запрос пришёл через fetch (SPA-навигация), возвращаем только контент
+    if request.headers.get('X-Requested-With') == 'fetch':
+        return render_template('_catalog_content.html',
+                               products=products,
+                               current_type=product_type,
+                               min_price=min_price,
+                               max_price=max_price,
+                               types=types)
+    # Обычный запрос — возвращаем полный шаблон
     return render_template('catalog.html',
                            products=products,
                            current_type=product_type,
@@ -159,6 +177,61 @@ def remove_from_cart(product_id):
     cart.pop(str(product_id), None)
     session['cart'] = cart
     return redirect(url_for('cart'))
+
+
+@app.route('/cart/update_ajax/<int:product_id>', methods=['POST'])
+def update_cart_ajax(product_id):
+    cart = session.get('cart', {})
+    qty = int(request.form.get('quantity', 1))
+    if qty <= 0:
+        cart.pop(str(product_id), None)
+    else:
+        cart[str(product_id)] = qty
+    session['cart'] = cart
+
+    # Пересчитываем данные для ответа
+    product = db.session.get(Product, product_id)
+    if not product:
+        return jsonify({'success': False, 'message': 'Товар не найден'}), 404
+
+    subtotal = product.price * qty
+    total = 0
+    for pid, quantity in cart.items():
+        p = db.session.get(Product, int(pid))
+        if p:
+            total += p.price * quantity
+
+    cart_total = sum(cart.values())
+
+    return jsonify({
+        'success': True,
+        'quantity': qty,
+        'subtotal': subtotal,
+        'total': total,
+        'cart_total': cart_total
+    })
+
+
+@app.route('/cart/remove_ajax/<int:product_id>', methods=['POST'])
+def remove_from_cart_ajax(product_id):
+    cart = session.get('cart', {})
+    cart.pop(str(product_id), None)
+    session['cart'] = cart
+
+    total = 0
+    for pid, quantity in cart.items():
+        p = db.session.get(Product, int(pid))
+        if p:
+            total += p.price * quantity
+
+    cart_total = sum(cart.values())
+
+    return jsonify({
+        'success': True,
+        'total': total,
+        'cart_total': cart_total,
+        'removed_product_id': product_id
+    })
 
 
 @app.route('/checkout', methods=['GET', 'POST'])
@@ -254,22 +327,29 @@ def checkout():
         total = 0
         for product_id, qty in cart.items():
             product = db.session.get(Product, int(product_id))
-        if product:
-            subtotal = product.price * qty
-            total += subtotal
-            cart_items.append({
-                'product': product,
-                'quantity': qty,
-                'subtotal': subtotal
-            })
+            if product:
+                subtotal = product.price * qty
+                total += subtotal
+                cart_items.append({
+                    'product': product,
+                    'quantity': qty,
+                    'subtotal': subtotal
+                })
 
         return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
 
 
 @app.route('/order_confirmation/<int:order_id>')
 def order_confirmation(order_id):
-    order = Order.query.get_or_404(order_id)
+    order = db.session.get(Order, order_id)
+    if not order:
+        abort(404)
     return render_template('order_confirmation.html', order=order)
+
+
+
+
+
 
 
 if __name__ == '__main__':

@@ -745,3 +745,52 @@ img {
         font-size: 0.9rem;
     }
 }
+.page-transition {
+    animation: fadeInPage 0.5s ease-out;
+}
+
+@keyframes fadeInPage {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* === Лоадер загрузки страницы === */
+#page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(44, 30, 20, 0.6); /* тёмный полупрозрачный фон */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+#page-loader.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.loader-spinner {
+    width: 60px;
+    height: 60px;
+    border: 5px solid var(--beige);
+    border-top: 5px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

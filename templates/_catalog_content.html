@@ -1,8 +1,3 @@
-{% extends 'base.html' %}
-
-{% block title %}Наши изделия — Кожаная мастерская «Тиснение»{% endblock %}
-
-{% block content %}
 <section class="catalog-page">
     <div class="container">
         <h1>Наши изделия</h1>
@@ -52,7 +47,7 @@
                     <span class="product-type">{{ product.product_type }}</span>
                     <p>{{ product.description }}</p>
                     <div class="product-price">{{ product.price }} ₽</div>
-                    <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post" hx-boost="false">
+                    <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post">
                         <button type="submit" class="btn btn-outline">В корзину</button>
                     </form>
                 </div>
@@ -64,4 +59,3 @@
         {% endif %}
     </div>
 </section>
-{% endblock %}

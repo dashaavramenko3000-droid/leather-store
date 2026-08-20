@@ -10,11 +10,74 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Montserrat:wght@300;400;500&display=swap"
           rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% block extra_js %}{% endblock %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
 </head>
-<body>
+<script>
+    (function () {
+        const main = document.getElementById('main-content');
+
+        // Функция загрузки страницы через fetch
+        async function loadPage(url, pushState = true) {
+            try {
+                const response = await fetch(url, {
+                    headers: {'X-Requested-With': 'fetch'}
+                });
+                if (!response.ok) throw new Error('Ошибка загрузки');
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newMain = doc.getElementById('main-content');
+                if (!newMain) throw new Error('Не найден main-content');
+                // Заменяем содержимое
+                main.innerHTML = newMain.innerHTML;
+                // Прокручиваем вверх
+                window.scrollTo(0, 0);
+                // Обновляем URL
+                if (pushState) {
+                    history.pushState({url: url}, '', url);
+                }
+                // Инициализируем AOS заново
+                if (window.AOS) AOS.refresh();
+                // Можно вызвать дополнительные функции, если нужно
+            } catch (error) {
+                console.error('Ошибка навигации:', error);
+                // В случае ошибки просто переходим по ссылке обычным способом
+                window.location.href = url;
+            }
+        }
+
+        // Перехват кликов по ссылкам
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+            // Игнорируем внешние ссылки, якоря, target=_blank, ссылки с data-ajax="false"
+            if (link.target === '_blank') return;
+            if (link.getAttribute('href').startsWith('#')) return;
+            if (link.dataset.ajax === 'false') return;
+            if (link.host !== window.location.host) return;
+            // Предотвращаем стандартный переход
+            e.preventDefault();
+            const url = link.href;
+            loadPage(url);
+        });
+
+        // Обработка кнопок "назад"/"вперёд"
+        window.addEventListener('popstate', function (e) {
+            if (e.state && e.state.url) {
+                loadPage(e.state.url, false);
+            }
+        });
+    })();
+</script>
+<body hx-boost="true"
+      hx-target="#main-content"
+      hx-select="#main-content"
+      hx-swap="outerHTML"
+      hx-push-url="true">
+
 <header class="site-header">
     <div class="container header-inner">
         <div class="logo">
@@ -41,8 +104,10 @@
     </div>
 </header>
 
-<main>
-    {% block content %}{% endblock %}
+<main id="main-content">
+    <div class="page-transition">
+        {% block content %}{% endblock %}
+    </div>
 </main>
 
 <footer class="site-footer">
@@ -53,9 +118,11 @@
 </footer>
 
 <button id="scrollToTopBtn" title="Наверх">↑</button>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 <script>
     AOS.init({
         duration: 800,        // длительность анимации в мс
@@ -63,5 +130,9 @@
         once: true            // анимация выполняется только один раз
     });
 </script>
+<!-- Лоадер загрузки страницы -->
+<div id="page-loader">
+    <div class="loader-spinner"></div>
+</div>
 </body>
 </html>
