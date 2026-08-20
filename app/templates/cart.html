@@ -79,7 +79,7 @@
                         <span>Итого</span>
                         <span id="cart-total">{{ total }} ₽</span>
                     </div>
-                    <a href="{{ url_for('main.checkout')}}" class="btn btn-primary w-100 mt-3">Оформить заказ</a>
+                    <a href="{{ url_for('main.checkout') }}" class="btn btn-primary w-100 mt-3">Оформить заказ</a>
                     <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить
                         покупки</a>
                 </div>
@@ -99,16 +99,14 @@
 
 {% block extra_js %}
 <script>
+    // Функции changeQuantity и removeFromCart остаются как в вашем коде, но теперь они будут в конце body
     function changeQuantity(productId, delta) {
-        // Получаем текущее количество из DOM
         const qtyElement = document.getElementById(`qty-${productId}`);
         let currentQty = parseInt(qtyElement.textContent);
         let newQty = currentQty + delta;
-
-        // Не позволяем уходить ниже 1
         if (newQty < 1) return;
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         fetch(`/cart/update_ajax/${productId}`, {
             method: 'POST',
             headers: {
@@ -120,24 +118,14 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Обновляем отображаемое количество
                     qtyElement.textContent = data.quantity;
-                    // Обновляем подытог
                     document.getElementById(`subtotal-${productId}`).textContent = data.subtotal + ' ₽';
-                    // Обновляем итоговую сумму
                     document.getElementById('cart-total').textContent = data.total + ' ₽';
                     document.getElementById('cart-total-items').textContent = data.total + ' ₽';
-                    // Обновляем счётчик в шапке
                     const cartCount = document.querySelector('.cart-count');
-                    if (cartCount) {
-                        cartCount.textContent = data.cart_total;
-                    }
-
-                    // Обновляем состояние кнопки "минус"
+                    if (cartCount) cartCount.textContent = data.cart_total;
                     const minusBtn = document.querySelector(`#cart-item-${productId} .qty-btn[onclick*="changeQuantity(${productId}, -1)"]`);
-                    if (minusBtn) {
-                        minusBtn.disabled = data.quantity <= 1;
-                    }
+                    if (minusBtn) minusBtn.disabled = data.quantity <= 1;
                 }
             })
             .catch(error => console.error('Ошибка сети:', error));
@@ -147,34 +135,28 @@
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         fetch(`/cart/remove_ajax/${productId}`, {
             method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            }
+            headers: {'X-CSRFToken': csrfToken}
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     const card = document.getElementById(`cart-item-${productId}`);
                     if (card) card.remove();
-
                     document.getElementById('cart-total').textContent = data.total + ' ₽';
                     document.getElementById('cart-total-items').textContent = data.total + ' ₽';
                     const cartCount = document.querySelector('.cart-count');
-                    if (cartCount) {
-                        cartCount.textContent = data.cart_total;
-                    }
-
+                    if (cartCount) cartCount.textContent = data.cart_total;
                     if (data.cart_total === 0) {
                         const container = document.querySelector('.row.g-4');
                         if (container) container.innerHTML = '';
                         const emptyDiv = document.createElement('div');
                         emptyDiv.className = 'text-center py-5';
                         emptyDiv.innerHTML = `
-                    <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
-                    <h2>Ваша корзина пуста</h2>
-                    <p class="text-muted">Добавьте товары из каталога, чтобы сделать заказ.</p>
-                    <a href="{{ url_for('main.catalog') }}" class="btn btn-primary btn-lg">Перейти в каталог</a>
-                `;
+                        <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
+                        <h2>Ваша корзина пуста</h2>
+                        <p class="text-muted">Добавьте товары из каталога, чтобы сделать заказ.</p>
+                        <a href="{{ url_for('main.catalog') }}" class="btn btn-primary btn-lg">Перейти в каталог</a>
+                    `;
                         document.querySelector('.container.my-5').appendChild(emptyDiv);
                     }
                 }

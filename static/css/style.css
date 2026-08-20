@@ -214,7 +214,7 @@ img {
 /* Hero */
 .hero {
     background: linear-gradient(rgba(44, 30, 20, 0.7), rgba(44, 30, 20, 0.7)),
-    url('https://placehold.co/1600x800/5a3e2b/ffffff?text=Кожа+и+тиснение') center/cover no-repeat;
+    url('{{ url_for("static", filename="img/leather_background.jpg") }}') center/cover no-repeat;
     color: var(--white);
     padding: 120px 0;
     text-align: center;
@@ -808,5 +808,106 @@ img {
     }
     to {
         transform: rotate(360deg);
+    }
+}
+
+.product-actions {
+    display: flex;
+    gap: 10px; /* расстояние между кнопками */
+    align-items: center; /* выравнивание по вертикали */
+    margin-top: 15px; /* отступ от цены */
+}
+
+/* Желательно, чтобы кнопки были одинаковой ширины, но можно оставить как есть */
+.product-actions form {
+    margin: 0;
+}
+
+/* Если хотите, чтобы кнопки занимали равное пространство */
+.product-actions form {
+    flex: 1;
+}
+
+.product-actions .btn {
+    width: 100%;
+    /*padding-left: 0;
+    padding-right: 0;*/
+    text-align: center;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+}
+
+/* Аккаунт в шапке */
+.header-account {
+    position: relative;
+    margin-left: 20px;
+}
+
+.account-toggle {
+    background: none;
+    border: none;
+    color: var(--cream);
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.account-toggle:hover {
+    background-color: var(--accent);
+    color: var(--brown-dark);
+}
+
+.account-dropdown {
+    position: absolute;
+    top: 50px; /* отступ от иконки */
+    right: 0;
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    min-width: 180px;
+    padding: 10px 0;
+    display: none; /* скрыто по умолчанию */
+    z-index: 1000;
+}
+
+.account-dropdown.open {
+    display: block;
+}
+
+.account-dropdown a {
+    display: block;
+    padding: 8px 20px;
+    color: var(--brown-dark);
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.account-dropdown a:hover {
+    background-color: var(--beige);
+    color: var(--brown-dark);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .header-account {
+        margin-left: auto;
+    }
+
+    .account-toggle {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+
+    .account-dropdown {
+        top: 45px;
+        right: 0;
     }
 }

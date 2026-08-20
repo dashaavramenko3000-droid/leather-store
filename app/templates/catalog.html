@@ -52,11 +52,17 @@
                     <span class="product-type">{{ product.product_type }}</span>
                     <p>{{ product.description }}</p>
                     <div class="product-price">{{ product.price }} ₽</div>
-                    <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}" method="post"
-                          style="display:inline;">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-outline">♡</button>
-                    </form>
+                    <div class="product-actions">
+                        <!-- Кнопка "В корзину" -->
+                        <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">В корзину</button>
+
+                        <!-- Кнопка "В избранное" -->
+                        <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline">♡</button>
+                        </form>
+                    </div>
+
                 </div>
             </div>
             {% endfor %}

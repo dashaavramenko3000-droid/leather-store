@@ -188,3 +188,50 @@ document.addEventListener('submit', function (e) {
     if (e.target.closest('form[data-ajax="true"]')) return;
     showLoader();
 });
+// Выпадающее меню аккаунта
+const accountToggle = document.getElementById('account-toggle');
+const accountDropdown = document.getElementById('account-dropdown');
+
+if (accountToggle && accountDropdown) {
+    accountToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        accountDropdown.classList.toggle('open');
+    });
+
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', function (e) {
+        if (!accountDropdown.contains(e.target) && e.target !== accountToggle) {
+            accountDropdown.classList.remove('open');
+        }
+    });
+}
+
+function addToCart(productId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch(`/add_to_cart_ajax/${productId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем счётчик корзины в шапке
+            const cartCount = document.querySelector('.cart-count');
+            if (cartCount) {
+                cartCount.textContent = data.cart_total;
+            }
+            // Можно показать всплывающее сообщение (например, через alert или кастомное)
+            // Простой вариант:
+            //alert(`Товар "${data.product_name}" добавлен в корзину`);
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка при добавлении товара');
+    });
+}

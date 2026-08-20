@@ -6,12 +6,14 @@ from ..extensions import db
 from ..models import Product, Order, OrderItem
 from ..forms import CheckoutForm
 
+
 @main_bp.context_processor
 def inject_cart_total():
     """Добавляет общее количество товаров в корзине во все шаблоны."""
     cart = session.get('cart', {})
     total_qty = sum(cart.values())
     return {'cart_total': total_qty}
+
 
 @main_bp.route('/')
 def home():
@@ -23,6 +25,7 @@ def home():
         if product:
             latest_by_type.append(product)
     return render_template('index.html', products=latest_by_type)
+
 
 @main_bp.route('/catalog')
 def catalog():
@@ -49,6 +52,7 @@ def catalog():
                            max_price=max_price,
                            types=types)
 
+
 @main_bp.route('/add_to_cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
     """Добавление товара в корзину (использует сессию)."""
@@ -62,6 +66,7 @@ def add_to_cart(product_id):
     session['cart'] = cart
     flash(f'Товар "{product.name}" добавлен в корзину', 'success')
     return redirect(request.referrer or url_for('main.catalog'))
+
 
 @main_bp.route('/cart')
 def cart():
@@ -95,6 +100,7 @@ def cart():
 
     return render_template('cart.html', cart_items=cart_items, total=total)
 
+
 @main_bp.route('/update_cart/<int:product_id>', methods=['POST'])
 def update_cart(product_id):
     """Обновление количества товара (обычный POST)."""
@@ -107,6 +113,7 @@ def update_cart(product_id):
     session['cart'] = cart
     return redirect(url_for('main.cart'))
 
+
 @main_bp.route('/remove_from_cart/<int:product_id>')
 def remove_from_cart(product_id):
     """Удаление товара из корзины (обычный запрос)."""
@@ -114,6 +121,7 @@ def remove_from_cart(product_id):
     cart.pop(str(product_id), None)
     session['cart'] = cart
     return redirect(url_for('main.cart'))
+
 
 @main_bp.route('/cart/update_ajax/<int:product_id>', methods=['POST'])
 def update_cart_ajax(product_id):
@@ -150,6 +158,7 @@ def update_cart_ajax(product_id):
         'cart_total': cart_total
     })
 
+
 @main_bp.route('/cart/remove_ajax/<int:product_id>', methods=['POST'])
 def remove_from_cart_ajax(product_id):
     """AJAX-удаление товара из корзины."""
@@ -170,6 +179,7 @@ def remove_from_cart_ajax(product_id):
         'cart_total': cart_total,
         'removed_product_id': product_id
     })
+
 
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
@@ -194,7 +204,9 @@ def checkout():
         if len(removed_products) == 1:
             flash('Один из товаров был удалён из каталога и убран из вашей корзины.', 'warning')
         else:
-            flash(f'Несколько товаров были удалены из каталога и убраны из вашей корзины ({len(removed_products)} шт.).', 'warning')
+            flash(
+                f'Несколько товаров были удалены из каталога и убраны из вашей корзины ({len(removed_products)} шт.).',
+                'warning')
         if not cart:
             flash('Все товары из вашей корзины были удалены.', 'info')
             return redirect(url_for('main.catalog'))
@@ -254,6 +266,7 @@ def checkout():
 
     return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
 
+
 @main_bp.route('/order_confirmation/<int:order_id>')
 def order_confirmation(order_id):
     """Страница подтверждения заказа."""
@@ -261,3 +274,23 @@ def order_confirmation(order_id):
     if not order:
         abort(404)
     return render_template('order_confirmation.html', order=order)
+
+
+@main_bp.route('/add_to_cart_ajax/<int:product_id>', methods=['POST'])
+def add_to_cart_ajax(product_id):
+    product = db.session.get(Product, product_id)
+    if not product:
+        return jsonify({'success': False, 'message': 'Товар не найден'}), 404
+
+    cart = session.get('cart', {})
+    cart[str(product_id)] = cart.get(str(product_id), 0) + 1
+    session['cart'] = cart
+
+    # Общее количество товаров в корзине (сумма всех единиц)
+    cart_total = sum(cart.values())
+
+    return jsonify({
+        'success': True,
+        'product_name': product.name,
+        'cart_total': cart_total
+    })
