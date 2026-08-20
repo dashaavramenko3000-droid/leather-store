@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}Кожаная мастерская «Тиснение»{% endblock %}</title>
     <!-- Подключаем Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,14 +82,14 @@
 <header class="site-header">
     <div class="container header-inner">
         <div class="logo">
-            <a href="/">Кожаная мастерская<br><span>«Тиснение»</span></a>
+            <a href="/static">Кожаная мастерская<br><span>«Тиснение»</span></a>
         </div>
         <nav class="main-nav">
             <ul>
-                <li><a href="{{ url_for('home') }}">Главная</a></li>
-                <li><a href="{{ url_for('catalog') }}">Каталог</a></li>
-                <li><a href="{{ url_for('home') }}#about">О нас</a></li>
-                <li><a href="{{ url_for('home') }}#contacts">Контакты</a></li>
+                <li><a href="{{ url_for('main.home') }}">Главная</a></li>
+                <li><a href="{{ url_for('main.catalog') }}">Каталог</a></li>
+                <li><a href="{{ url_for('main.home') }}#about">О нас</a></li>
+                <li><a href="{{ url_for('main.home') }}#contacts">Контакты</a></li>
             </ul>
         </nav>
         <div class="header-contacts">
@@ -96,7 +97,7 @@
         </div>
         <!-- Новый блок корзины -->
         <div class="header-cart">
-            <a href="{{ url_for('cart') }}" aria-label="Корзина">
+            <a href="{{ url_for('main.cart') }}" aria-label="Корзина">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count">{{ cart_total }}</span>
             </a>

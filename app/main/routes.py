@@ -1,55 +1,19 @@
-import os
-from flask_login import LoginManager
-from flask_migrate import Migrate
-from models import db, User, Product, Order, OrderItem
-from admin import admin_bp
-from forms import CheckoutForm
-from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify, abort
+from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort
+from . import main_bp
+from ..extensions import db
+from ..models import Product, Order, OrderItem
+from ..forms import CheckoutForm
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
-# По умолчанию SQLite для локальной разработки, в продакшене задаётся DATABASE_URL
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///leather_store.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Настройки для загрузки изображений
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-
-from flask_caching import Cache
-
-cache = Cache(app, config={
-    'CACHE_TYPE': 'SimpleCache',  # или 'FileSystemCache' для продакшена
-    'CACHE_DEFAULT_TIMEOUT': 300  # 5 минут
-})
-
-db.init_app(app)
-migrate = Migrate(app, db)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'admin.login'
-login_manager.login_message = 'Пожалуйста, войдите для доступа к админ-панели.'
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return db.session.get(User, int(user_id))
-
-
-app.register_blueprint(admin_bp)
-
-
-@app.context_processor
-def cart_total_count():
+@main_bp.context_processor
+def inject_cart_total():
+    """Добавляет общее количество товаров в корзине во все шаблоны."""
     cart = session.get('cart', {})
     total_qty = sum(cart.values())
     return {'cart_total': total_qty}
 
-
-@app.route('/')
-@cache.cached(timeout=60)
+@main_bp.route('/')
 def home():
+    """Главная страница: показываем по одному последнему товару каждого типа."""
     types = db.session.query(Product.product_type).distinct().all()
     latest_by_type = []
     for t in types:
@@ -58,10 +22,9 @@ def home():
             latest_by_type.append(product)
     return render_template('index.html', products=latest_by_type)
 
-
-@app.route('/catalog')
-@cache.cached(timeout=60, query_string=True)
+@main_bp.route('/catalog')
 def catalog():
+    """Каталог с фильтрацией по типу и цене."""
     product_type = request.args.get('type', '')
     min_price = request.args.get('min_price', type=int)
     max_price = request.args.get('max_price', type=int)
@@ -77,16 +40,6 @@ def catalog():
 
     products = query.all()
     types = [t[0] for t in db.session.query(Product.product_type).distinct().all()]
-
-    # Если запрос пришёл через fetch (SPA-навигация), возвращаем только контент
-    if request.headers.get('X-Requested-With') == 'fetch':
-        return render_template('_catalog_content.html',
-                               products=products,
-                               current_type=product_type,
-                               min_price=min_price,
-                               max_price=max_price,
-                               types=types)
-    # Обычный запрос — возвращаем полный шаблон
     return render_template('catalog.html',
                            products=products,
                            current_type=product_type,
@@ -94,50 +47,32 @@ def catalog():
                            max_price=max_price,
                            types=types)
 
-
-# Создание таблиц и администратора
-with app.app_context():
-    # Создаём папку для загрузок, если её нет
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
-    db.create_all()
-    if not User.query.filter_by(username='admin').first():
-        admin_user = User(username='admin')
-        admin_user.set_password('admin123')
-        db.session.add(admin_user)
-        db.session.commit()
-        print('Создан пользователь admin с паролем admin123')
-
-# Создание папки для загрузок
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
-
-@app.route('/add_to_cart/<int:product_id>', methods=['POST'])
+@main_bp.route('/add_to_cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
-    product = db.session.get(Product, product_id)  # или Product.query.get_or_404
+    """Добавление товара в корзину (использует сессию)."""
+    product = db.session.get(Product, product_id)
     if not product:
         flash('Товар не найден', 'danger')
-        return redirect(url_for('catalog'))
+        return redirect(url_for('main.catalog'))
+
     cart = session.get('cart', {})
     cart[str(product_id)] = cart.get(str(product_id), 0) + 1
     session['cart'] = cart
     flash(f'Товар "{product.name}" добавлен в корзину', 'success')
-    return redirect(request.referrer or url_for('catalog'))
+    return redirect(request.referrer or url_for('main.catalog'))
 
-
-@app.route('/cart')
+@main_bp.route('/cart')
 def cart():
+    """Страница корзины."""
     cart = session.get('cart', {})
+    # Убираем товары, которых уже нет в базе
     updated_cart = dict(cart)
     removed = False
-
     for product_id in list(updated_cart.keys()):
         product = db.session.get(Product, int(product_id))
         if not product:
             updated_cart.pop(product_id, None)
             removed = True
-
     if removed:
         session['cart'] = updated_cart
         cart = updated_cart
@@ -158,9 +93,9 @@ def cart():
 
     return render_template('cart.html', cart_items=cart_items, total=total)
 
-
-@app.route('/update_cart/<int:product_id>', methods=['POST'])
+@main_bp.route('/update_cart/<int:product_id>', methods=['POST'])
 def update_cart(product_id):
+    """Обновление количества товара (обычный POST)."""
     cart = session.get('cart', {})
     qty = int(request.form.get('quantity', 1))
     if qty <= 0:
@@ -168,28 +103,31 @@ def update_cart(product_id):
     else:
         cart[str(product_id)] = qty
     session['cart'] = cart
-    return redirect(url_for('cart'))
+    return redirect(url_for('main.cart'))
 
-
-@app.route('/remove_from_cart/<int:product_id>')
+@main_bp.route('/remove_from_cart/<int:product_id>')
 def remove_from_cart(product_id):
+    """Удаление товара из корзины (обычный запрос)."""
     cart = session.get('cart', {})
     cart.pop(str(product_id), None)
     session['cart'] = cart
-    return redirect(url_for('cart'))
+    return redirect(url_for('main.cart'))
 
-
-@app.route('/cart/update_ajax/<int:product_id>', methods=['POST'])
+@main_bp.route('/cart/update_ajax/<int:product_id>', methods=['POST'])
 def update_cart_ajax(product_id):
+    """AJAX-обновление количества товара."""
     cart = session.get('cart', {})
-    qty = int(request.form.get('quantity', 1))
+    try:
+        qty = int(request.form.get('quantity', 1))
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Некорректное количество'}), 400
+
     if qty <= 0:
         cart.pop(str(product_id), None)
     else:
         cart[str(product_id)] = qty
     session['cart'] = cart
 
-    # Пересчитываем данные для ответа
     product = db.session.get(Product, product_id)
     if not product:
         return jsonify({'success': False, 'message': 'Товар не найден'}), 404
@@ -202,7 +140,6 @@ def update_cart_ajax(product_id):
             total += p.price * quantity
 
     cart_total = sum(cart.values())
-
     return jsonify({
         'success': True,
         'quantity': qty,
@@ -211,9 +148,9 @@ def update_cart_ajax(product_id):
         'cart_total': cart_total
     })
 
-
-@app.route('/cart/remove_ajax/<int:product_id>', methods=['POST'])
+@main_bp.route('/cart/remove_ajax/<int:product_id>', methods=['POST'])
 def remove_from_cart_ajax(product_id):
+    """AJAX-удаление товара из корзины."""
     cart = session.get('cart', {})
     cart.pop(str(product_id), None)
     session['cart'] = cart
@@ -225,7 +162,6 @@ def remove_from_cart_ajax(product_id):
             total += p.price * quantity
 
     cart_total = sum(cart.values())
-
     return jsonify({
         'success': True,
         'total': total,
@@ -233,68 +169,50 @@ def remove_from_cart_ajax(product_id):
         'removed_product_id': product_id
     })
 
-
-@app.route('/checkout', methods=['GET', 'POST'])
+@main_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
+    """Оформление заказа."""
     cart = session.get('cart', {})
     if not cart:
         flash('Ваша корзина пуста', 'info')
-        return redirect(url_for('catalog'))
+        return redirect(url_for('main.catalog'))
 
-    # === Обработка исчезнувших товаров ===
-    # Создаём копию корзины, чтобы безопасно изменять session['cart']
+    # Очистка корзины от удалённых товаров
     updated_cart = dict(cart)
     removed_products = []
-
     for product_id in list(updated_cart.keys()):
         product = db.session.get(Product, int(product_id))
         if not product:
-            # Товар удалён из базы — убираем его из корзины
             updated_cart.pop(product_id, None)
             removed_products.append(product_id)
 
     if removed_products:
-        # Обновляем сессию
         session['cart'] = updated_cart
         cart = updated_cart
-
-        # Уведомляем пользователя
         if len(removed_products) == 1:
             flash('Один из товаров был удалён из каталога и убран из вашей корзины.', 'warning')
         else:
-            flash(
-                f'Несколько товаров были удалены из каталога и убраны из вашей корзины ({len(removed_products)} шт.).',
-                'warning')
-
-        # Если корзина стала пустой — перенаправляем в каталог
+            flash(f'Несколько товаров были удалены из каталога и убраны из вашей корзины ({len(removed_products)} шт.).', 'warning')
         if not cart:
             flash('Все товары из вашей корзины были удалены.', 'info')
-            return redirect(url_for('catalog'))
-    # ===================================
+            return redirect(url_for('main.catalog'))
 
     form = CheckoutForm()
     if form.validate_on_submit():
-        # Пересчитываем итоговую сумму по актуальной корзине
         total = 0
         items_data = []
         for product_id, qty in cart.items():
             product = db.session.get(Product, int(product_id))
-            if product:  # Дополнительная проверка на случай, если товар исчез после проверки
+            if product:
                 subtotal = product.price * qty
                 total += subtotal
-                items_data.append({
-                    'product': product,
-                    'quantity': qty,
-                    'subtotal': subtotal
-                })
+                items_data.append({'product': product, 'quantity': qty, 'subtotal': subtotal})
 
-        # Если вдруг все товары исчезли (маловероятно, но возможно)
         if not items_data:
             session.pop('cart', None)
             flash('К сожалению, все товары в корзине недоступны. Заказ не оформлен.', 'danger')
-            return redirect(url_for('catalog'))
+            return redirect(url_for('main.catalog'))
 
-        # Создаём заказ
         order = Order(
             customer_name=form.customer_name.data,
             customer_email=form.customer_email.data,
@@ -317,41 +235,26 @@ def checkout():
             db.session.add(order_item)
 
         db.session.commit()
-        session.pop('cart', None)  # очищаем корзину
+        session.pop('cart', None)
         flash('Заказ успешно оформлен! Мы свяжемся с вами.', 'success')
-        return redirect(url_for('order_confirmation', order_id=order.id))
+        return redirect(url_for('main.order_confirmation', order_id=order.id))
 
-    # Если GET-запрос или форма не прошла валидацию — показываем корзину
-    else:
-        cart_items = []
-        total = 0
-        for product_id, qty in cart.items():
-            product = db.session.get(Product, int(product_id))
-            if product:
-                subtotal = product.price * qty
-                total += subtotal
-                cart_items.append({
-                    'product': product,
-                    'quantity': qty,
-                    'subtotal': subtotal
-                })
+    # GET-запрос или ошибки валидации
+    cart_items = []
+    total = 0
+    for product_id, qty in cart.items():
+        product = db.session.get(Product, int(product_id))
+        if product:
+            subtotal = product.price * qty
+            total += subtotal
+            cart_items.append({'product': product, 'quantity': qty, 'subtotal': subtotal})
 
-        return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
+    return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
 
-
-@app.route('/order_confirmation/<int:order_id>')
+@main_bp.route('/order_confirmation/<int:order_id>')
 def order_confirmation(order_id):
+    """Страница подтверждения заказа."""
     order = db.session.get(Order, order_id)
     if not order:
         abort(404)
     return render_template('order_confirmation.html', order=order)
-
-
-
-
-
-
-
-if __name__ == '__main__':
-    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-    app.run(debug=debug_mode)
