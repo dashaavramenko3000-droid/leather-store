@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Вход</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.email_or_username.label }}<br>
+            {{ form.email_or_username(class="form-control") }}
+            {% for error in form.email_or_username.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.password.label }}<br>
+            {{ form.password(class="form-control") }}
+            {% for error in form.password.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="form-check">
+            {{ form.remember() }} {{ form.remember.label }}
+        </div>
+        <button type="submit" class="btn">Войти</button>
+    </form>
+    <p>Нет аккаунта? <a href="{{ url_for('auth.register') }}">Зарегистрироваться</a></p>
+</div>
+{% endblock %}

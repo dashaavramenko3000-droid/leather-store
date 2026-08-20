@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Избранное{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Избранное</h2>
+    {% if products %}
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <div class="product-image">
+                {% set main_image = product.images|sort(attribute='order')|first %}
+                {% if main_image %}
+                    <img src="{{ url_for('static', filename=main_image.image_path) }}" alt="{{ product.name }}">
+                {% else %}
+                    <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения">
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <h3>{{ product.name }}</h3>
+                <p>{{ product.price }} ₽</p>
+                <div style="display:flex; gap:10px;">
+                    <a href="{{ url_for('main.catalog') }}" class="btn">В каталог</a>
+                    <form action="{{ url_for('auth.remove_from_wishlist', product_id=product.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline">Удалить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>В избранном пусто.</p>
+    {% endif %}
+</div>
+{% endblock %}

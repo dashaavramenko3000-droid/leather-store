@@ -1,16 +1,20 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField, FileAllowed
-from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField
-from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp
+from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField, BooleanField
+from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp, EqualTo
 
+
+# ---------- АДМИНИСТРАТИВНАЯ ЧАСТЬ ----------
 
 class LoginForm(FlaskForm):
+    """Форма входа в админ-панель."""
     username = StringField('Логин', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     submit = SubmitField('Войти')
 
 
 class ProductForm(FlaskForm):
+    """Форма добавления/редактирования товара."""
     name = StringField('Название', validators=[DataRequired(), Length(max=200)])
     product_type = SelectField('Тип изделия', choices=[
         ('Кошелёк', 'Кошелёк'),
@@ -26,7 +30,40 @@ class ProductForm(FlaskForm):
     submit = SubmitField('Сохранить')
 
 
+# ---------- ПОКУПАТЕЛЬСКАЯ ЧАСТЬ ----------
+
+class CustomerLoginForm(FlaskForm):
+    """Форма входа для покупателей (по email или имени пользователя)."""
+    email_or_username = StringField('Email или логин', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    remember = BooleanField('Запомнить меня')
+    submit = SubmitField('Войти')
+
+
+class RegistrationForm(FlaskForm):
+    """Форма регистрации нового покупателя."""
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Пароль', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Повторите пароль', validators=[
+        DataRequired(),
+        EqualTo('password', message='Пароли должны совпадать')
+    ])
+    full_name = StringField('Имя', validators=[Length(max=100)])
+    phone = StringField('Телефон', validators=[Length(max=20)])
+    address = TextAreaField('Адрес', validators=[Length(max=200)])
+    submit = SubmitField('Зарегистрироваться')
+
+
+class UpdateProfileForm(FlaskForm):
+    """Форма редактирования профиля покупателя."""
+    full_name = StringField('Имя', validators=[Length(max=100)])
+    phone = StringField('Телефон', validators=[Length(max=20)])
+    address = TextAreaField('Адрес', validators=[Length(max=200)])
+    submit = SubmitField('Сохранить')
+
+
 class CheckoutForm(FlaskForm):
+    """Форма оформления заказа."""
     customer_name = StringField('Имя', validators=[
         DataRequired(message='Пожалуйста, укажите ваше имя'),
         Length(max=50, message='Имя не должно превышать 50 символов')

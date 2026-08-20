@@ -90,6 +90,14 @@
                 <li><a href="{{ url_for('main.catalog') }}">Каталог</a></li>
                 <li><a href="{{ url_for('main.home') }}#about">О нас</a></li>
                 <li><a href="{{ url_for('main.home') }}#contacts">Контакты</a></li>
+                {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('auth.account') }}">{{ current_user.full_name or current_user.email }}</a></li>
+                <li><a href="{{ url_for('auth.wishlist') }}">Избранное</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Выйти</a></li>
+                {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Войти</a></li>
+                <li><a href="{{ url_for('auth.register') }}">Регистрация</a></li>
+                {% endif %}
             </ul>
         </nav>
         <div class="header-contacts">

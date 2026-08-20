@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Личный кабинет{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Личный кабинет</h2>
+    <p><strong>Имя:</strong> {{ current_user.full_name or 'Не указано' }}</p>
+    <p><strong>Email:</strong> {{ current_user.email }}</p>
+    <p><strong>Телефон:</strong> {{ current_user.phone or 'Не указан' }}</p>
+    <p><strong>Адрес:</strong> {{ current_user.address or 'Не указан' }}</p>
+    <div style="margin-top:20px;">
+        <a href="{{ url_for('auth.orders') }}" class="btn">Мои заказы</a>
+        <a href="{{ url_for('auth.wishlist') }}" class="btn btn-outline">Избранное</a>
+        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline">Редактировать профиль</a>
+    </div>
+</div>
+{% endblock %}

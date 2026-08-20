@@ -1,12 +1,21 @@
-import os
-from flask import render_template, redirect, url_for, flash, request, current_app
-from flask_login import login_user, logout_user, login_required, current_user
+from functools import wraps
+from flask import render_template, redirect, url_for, flash, request, abort
+from flask_login import login_user, logout_user, current_user
 from . import admin_bp
 from ..extensions import db
 from ..models import User, Product, ProductImage, Order
 from ..forms import LoginForm, ProductForm
 from ..utils import save_image, delete_image_file
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for('admin.login'))
+        if not current_user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -24,7 +33,7 @@ def login():
 
 
 @admin_bp.route('/logout')
-@login_required
+@admin_required
 def logout():
     logout_user()
     flash('Вы вышли из системы', 'info')
@@ -32,7 +41,7 @@ def logout():
 
 
 @admin_bp.route('/')
-@login_required
+@admin_required
 def dashboard():
     product_count = Product.query.count()
     order_count = Order.query.count()
@@ -40,7 +49,7 @@ def dashboard():
 
 
 @admin_bp.route('/products')
-@login_required
+@admin_required
 def products():
     search = request.args.get('search', '')
     if search:
@@ -51,7 +60,7 @@ def products():
 
 
 @admin_bp.route('/products/add', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def add_product():
     form = ProductForm()
     if form.validate_on_submit():
@@ -81,7 +90,7 @@ def add_product():
 
 
 @admin_bp.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def edit_product(product_id):
     product = db.session.get(Product, product_id)
     if not product:
@@ -120,7 +129,7 @@ def edit_product(product_id):
 
 
 @admin_bp.route('/products/delete/<int:product_id>')
-@login_required
+@admin_required
 def delete_product(product_id):
     product = db.session.get(Product, product_id)
     if not product:
@@ -135,14 +144,14 @@ def delete_product(product_id):
 
 
 @admin_bp.route('/orders')
-@login_required
+@admin_required
 def orders():
     all_orders = Order.query.order_by(Order.created_at.desc()).all()
     return render_template('admin/orders.html', orders=all_orders)
 
 
 @admin_bp.route('/orders/<int:order_id>')
-@login_required
+@admin_required
 def order_detail(order_id):
     order = db.session.get(Order, order_id)
     if not order:
@@ -151,7 +160,7 @@ def order_detail(order_id):
 
 
 @admin_bp.route('/orders/delete/<int:order_id>')
-@login_required
+@admin_required
 def delete_order(order_id):
     order = db.session.get(Order, order_id)
     if not order:

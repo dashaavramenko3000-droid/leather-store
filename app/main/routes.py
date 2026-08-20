@@ -1,4 +1,6 @@
 from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort
+from flask_login import current_user
+
 from . import main_bp
 from ..extensions import db
 from ..models import Product, Order, OrderItem
@@ -214,6 +216,7 @@ def checkout():
             return redirect(url_for('main.catalog'))
 
         order = Order(
+            user_id=current_user.id if current_user.is_authenticated else None,
             customer_name=form.customer_name.data,
             customer_email=form.customer_email.data,
             customer_phone=form.customer_phone.data,

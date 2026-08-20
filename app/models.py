@@ -5,10 +5,18 @@ from .extensions import db
 
 
 class User(UserMixin, db.Model):
-    """Пользователь (администратор)."""
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=True)  # для админа, может быть NULL
+    email = db.Column(db.String(120), unique=True, nullable=True)    # для покупателей
     password_hash = db.Column(db.String(200), nullable=False)
+    full_name = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+    address = db.Column(db.String(200))
+    is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    orders = db.relationship('Order', backref='customer', lazy=True)
+    wishlist_items = db.relationship('WishlistItem', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -16,23 +24,23 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def __repr__(self):
+        return f'<User {self.email or self.username}>'
+
 
 class Product(db.Model):
-    """Товар (изделие из кожи)."""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.Integer, nullable=False)  # Цена в рублях
+    price = db.Column(db.Integer, nullable=False)
     product_type = db.Column(db.String(50), nullable=False, default='Кошелёк')
-    images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan',
-                             order_by='ProductImage.order')
+    images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan', order_by='ProductImage.order')
 
     def __repr__(self):
         return f'<Product {self.name}>'
 
 
 class ProductImage(db.Model):
-    """Фотографии товара."""
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     image_path = db.Column(db.String(500), nullable=False)
@@ -43,13 +51,14 @@ class ProductImage(db.Model):
 
 
 class Order(db.Model):
-    """Заказ клиента."""
     id = db.Column(db.Integer, primary_key=True)
-    customer_name = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # NULL, если гость
+    customer_name = db.Column(db.String(100), nullable=False)
     customer_email = db.Column(db.String(120), nullable=False)
-    customer_phone = db.Column(db.String(20), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    comment = db.Column(db.String(200))
+    customer_phone = db.Column(db.String(30), nullable=False)
+    address = db.Column(db.Text)
+    comment = db.Column(db.Text)
+    status = db.Column(db.String(20), default='new')  # new, processing, shipped, completed, cancelled
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     total_price = db.Column(db.Integer, nullable=False)
     items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
@@ -59,15 +68,20 @@ class Order(db.Model):
 
 
 class OrderItem(db.Model):
-    """Позиция в заказе."""
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id', ondelete='SET NULL'), nullable=True)
-    product_name = db.Column(db.String(200), nullable=False)  # Название на момент покупки
-    price = db.Column(db.Integer, nullable=False)  # Цена за единицу
+    product_name = db.Column(db.String(200), nullable=False)
+    price = db.Column(db.Integer, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
 
     product = db.relationship('Product', backref='order_items')
 
-    def __repr__(self):
-        return f'<OrderItem {self.id}>'
+
+class WishlistItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    product = db.relationship('Product', backref='wishlist_items')

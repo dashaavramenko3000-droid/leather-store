@@ -1,13 +1,13 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from .config import Config
 from .extensions import db, login_manager, migrate, cache, csrf
 from .utils import create_upload_folder
 
 
 def create_app(config_class=Config):
-    """Фабрика приложения"""
-    app = Flask(__name__, static_folder='../static',
+    app = Flask(__name__,
+                static_folder='../static',
                 static_url_path='/static')
     app.config.from_object(config_class)
 
@@ -16,21 +16,31 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     migrate.init_app(app, db)
     cache.init_app(app)
-    csrf.init_app(app)  # если используете CSRF
+    csrf.init_app(app)
 
-    # Создаём папку для загрузок (если её нет)
+    # Создание папки для загрузок
     create_upload_folder(app)
 
-    # Регистрация blueprints
+    # Blueprints
     from .main.routes import main_bp
     from .admin.routes import admin_bp
+    from .auth.routes import auth_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(auth_bp, url_prefix='/auth')
 
     # Загрузка пользователя для Flask-Login
     from .models import User
     @login_manager.user_loader
     def load_user(user_id):
         return db.session.get(User, int(user_id))
+
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице.'
+
+    # Обработчик ошибки 403
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('403.html'), 403
 
     return app
