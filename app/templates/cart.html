@@ -79,8 +79,9 @@
                         <span>Итого</span>
                         <span id="cart-total">{{ total }} ₽</span>
                     </div>
-                    <a href="{{ url_for('checkout') }}" class="btn btn-primary w-100 mt-3">Оформить заказ</a>
-                    <a href="{{ url_for('catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить покупки</a>
+                    <a href="{{ url_for('main.checkout')}}" class="btn btn-primary w-100 mt-3">Оформить заказ</a>
+                    <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить
+                        покупки</a>
                 </div>
             </div>
         </div>
@@ -90,7 +91,7 @@
         <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
         <h2>Ваша корзина пуста</h2>
         <p class="text-muted">Добавьте товары из каталога, чтобы сделать заказ.</p>
-        <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-lg">Перейти в каталог</a>
+        <a href="{{ url_for('main.catalog') }}" class="btn btn-primary btn-lg">Перейти в каталог</a>
     </div>
     {% endif %}
 </div>
@@ -106,11 +107,13 @@
 
         // Не позволяем уходить ниже 1
         if (newQty < 1) return;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         fetch(`/cart/update_ajax/${productId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
             },
             body: `quantity=${encodeURIComponent(newQty)}`
         })
@@ -141,8 +144,12 @@
     }
 
     function removeFromCart(productId) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         fetch(`/cart/remove_ajax/${productId}`, {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
         })
             .then(response => response.json())
             .then(data => {
@@ -166,7 +173,7 @@
                     <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
                     <h2>Ваша корзина пуста</h2>
                     <p class="text-muted">Добавьте товары из каталога, чтобы сделать заказ.</p>
-                    <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-lg">Перейти в каталог</a>
+                    <a href="{{ url_for('main.catalog') }}" class="btn btn-primary btn-lg">Перейти в каталог</a>
                 `;
                         document.querySelector('.container.my-5').appendChild(emptyDiv);
                     }

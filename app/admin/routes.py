@@ -1,26 +1,11 @@
 import os
-import uuid
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
-from PIL import Image
-from werkzeug.utils import secure_filename
-from forms import LoginForm, ProductForm
-from models import db, Product, ProductImage, User, Order
-
-admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
-
-
-def save_image(file):
-    """Сохраняет одно изображение, сжимает и возвращает относительный путь."""
-    if file and file.filename:
-        filename = secure_filename(file.filename)
-        unique_name = f"{uuid.uuid4().hex}_{filename}"
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_name)
-        img = Image.open(file)
-        img.thumbnail((1200, 1200))
-        img.save(file_path, optimize=True, quality=85)
-        return 'uploads/' + unique_name
-    return None
+from . import admin_bp
+from ..extensions import db
+from ..models import User, Product, ProductImage, Order
+from ..forms import LoginForm, ProductForm
+from ..utils import save_image, delete_image_file
 
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
@@ -50,7 +35,8 @@ def logout():
 @login_required
 def dashboard():
     product_count = Product.query.count()
-    return render_template('admin/dashboard.html', product_count=product_count)
+    order_count = Order.query.count()
+    return render_template('admin/dashboard.html', product_count=product_count, order_count=order_count)
 
 
 @admin_bp.route('/products')
@@ -78,7 +64,7 @@ def add_product():
         db.session.add(product)
         db.session.flush()  # получить id
 
-        # Сохраняем загруженные изображения
+        # Сохраняем изображения
         if form.images.data:
             for i, file in enumerate(form.images.data):
                 if file.filename:
@@ -97,7 +83,9 @@ def add_product():
 @admin_bp.route('/products/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
 def edit_product(product_id):
-    product = Product.query.get_or_404(product_id)
+    product = db.session.get(Product, product_id)
+    if not product:
+        abort(404)
     form = ProductForm(obj=product)
     if form.validate_on_submit():
         product.name = form.name.data
@@ -107,7 +95,6 @@ def edit_product(product_id):
 
         # Добавление новых изображений
         if form.images.data:
-            # Определяем следующий порядок
             max_order = max([img.order for img in product.images], default=-1)
             for i, file in enumerate(form.images.data):
                 if file.filename:
@@ -120,13 +107,9 @@ def edit_product(product_id):
         delete_ids = request.form.getlist('delete_images')
         if delete_ids:
             for img_id in delete_ids:
-                img = ProductImage.query.get(int(img_id))
+                img = db.session.get(ProductImage, int(img_id))
                 if img and img.product_id == product.id:
-                    # Удаляем файл
-                    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'],
-                                             img.image_path.replace('uploads/', '', 1))
-                    if os.path.exists(file_path):
-                        os.remove(file_path)
+                    delete_image_file(img.image_path)
                     db.session.delete(img)
 
         db.session.commit()
@@ -139,13 +122,13 @@ def edit_product(product_id):
 @admin_bp.route('/products/delete/<int:product_id>')
 @login_required
 def delete_product(product_id):
-    product = Product.query.get_or_404(product_id)
-    # Удаляем файлы всех изображений
+    product = db.session.get(Product, product_id)
+    if not product:
+        abort(404)
+    # Удаляем файлы изображений
     for img in product.images:
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], img.image_path.replace('uploads/', '', 1))
-        if os.path.exists(file_path):
-            os.remove(file_path)
-    db.session.delete(product)  # благодаря cascade удалит и записи в ProductImage
+        delete_image_file(img.image_path)
+    db.session.delete(product)
     db.session.commit()
     flash('Товар удалён', 'success')
     return redirect(url_for('admin.products'))
@@ -161,15 +144,19 @@ def orders():
 @admin_bp.route('/orders/<int:order_id>')
 @login_required
 def order_detail(order_id):
-    order = Order.query.get_or_404(order_id)
+    order = db.session.get(Order, order_id)
+    if not order:
+        abort(404)
     return render_template('admin/order_detail.html', order=order)
 
 
 @admin_bp.route('/orders/delete/<int:order_id>')
 @login_required
 def delete_order(order_id):
-    order = Order.query.get_or_404(order_id)
-    db.session.delete(order)  # благодаря cascade удалятся и элементы заказа
+    order = db.session.get(Order, order_id)
+    if not order:
+        abort(404)
+    db.session.delete(order)
     db.session.commit()
     flash('Заказ удалён', 'success')
     return redirect(url_for('admin.orders'))

@@ -4,7 +4,7 @@
 
         <!-- Фильтр -->
         <div class="filters">
-            <form method="get" action="{{ url_for('catalog') }}" class="filter-form">
+            <form method="get" action="{{ url_for('main.catalog') }}" class="filter-form">
                 <div class="filter-group">
                     <label for="type">Тип изделия:</label>
                     <select name="type" id="type">
@@ -17,15 +17,15 @@
                 <div class="filter-group">
                     <label for="min_price">Цена от:</label>
                     <input type="number" name="min_price" id="min_price"
-                           value="{{ min_price if min_price is not none }}" min="0" placeholder="0">
+                           value="{{ min_price if min_price is not none else '' }}" min="0" placeholder="0">
                 </div>
                 <div class="filter-group">
                     <label for="max_price">до:</label>
                     <input type="number" name="max_price" id="max_price"
-                           value="{{ max_price if max_price is not none }}" min="0" placeholder="Любая">
+                           value="{{ max_price if max_price is not none else '' }}" min="0" placeholder="Любая">
                 </div>
                 <button type="submit" class="btn">Применить</button>
-                <a href="{{ url_for('catalog') }}" class="btn btn-outline">Сбросить</a>
+                <a href="{{ url_for('main.catalog') }}" class="btn btn-outline">Сбросить</a>
             </form>
         </div>
 
@@ -47,7 +47,8 @@
                     <span class="product-type">{{ product.product_type }}</span>
                     <p>{{ product.description }}</p>
                     <div class="product-price">{{ product.price }} ₽</div>
-                    <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post">
+                    <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-outline">В корзину</button>
                     </form>
                 </div>
