@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from functools import wraps
 from flask import render_template, redirect, url_for, flash, request, abort
 from flask_login import login_user, logout_user, current_user
@@ -148,8 +149,31 @@ def delete_product(product_id):
 @admin_bp.route('/orders')
 @admin_required
 def orders():
-    all_orders = Order.query.order_by(Order.created_at.desc()).all()
-    return render_template('admin/orders.html', orders=all_orders)
+    # Получение параметров фильтрации
+    filter_id = request.args.get('id', type=int)
+    filter_status = request.args.get('status', '')
+    filter_date = request.args.get('date', '')
+
+    query = Order.query
+
+    if filter_id:
+        query = query.filter(Order.id == filter_id)
+    if filter_status:
+        query = query.filter(Order.status == filter_status)
+    if filter_date:
+        try:
+            date_obj = datetime.strptime(filter_date, '%Y-%m-%d')
+            next_day = date_obj + timedelta(days=1)
+            query = query.filter(Order.created_at >= date_obj, Order.created_at < next_day)
+        except ValueError:
+            pass  # некорректная дата игнорируется
+
+    all_orders = query.order_by(Order.created_at.desc()).all()
+    return render_template('admin/orders.html',
+                           orders=all_orders,
+                           filter_id=filter_id,
+                           filter_status=filter_status,
+                           filter_date=filter_date)
 
 
 @admin_bp.route('/orders/<int:order_id>')
@@ -176,8 +200,30 @@ def delete_order(order_id):
 @admin_bp.route('/custom-orders')
 @admin_required
 def custom_orders():
-    requests = CustomOrder.query.order_by(CustomOrder.created_at.desc()).all()
-    return render_template('admin/custom_orders.html', requests=requests)
+    filter_id = request.args.get('id', type=int)
+    filter_status = request.args.get('status', '')
+    filter_date = request.args.get('date', '')
+
+    query = CustomOrder.query
+
+    if filter_id:
+        query = query.filter(CustomOrder.id == filter_id)
+    if filter_status:
+        query = query.filter(CustomOrder.status == filter_status)
+    if filter_date:
+        try:
+            date_obj = datetime.strptime(filter_date, '%Y-%m-%d')
+            next_day = date_obj + timedelta(days=1)
+            query = query.filter(CustomOrder.created_at >= date_obj, CustomOrder.created_at < next_day)
+        except ValueError:
+            pass
+
+    requests = query.order_by(CustomOrder.created_at.desc()).all()
+    return render_template('admin/custom_orders.html',
+                           requests=requests,
+                           filter_id=filter_id,
+                           filter_status=filter_status,
+                           filter_date=filter_date)
 
 
 @admin_bp.route('/custom-orders/<int:order_id>')

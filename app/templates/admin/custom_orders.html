@@ -5,6 +5,42 @@
 {% block content %}
 <h2>Индивидуальные заявки</h2>
 
+<!-- Фильтры -->
+<div class="filters mb-4">
+    <form method="GET" action="{{ url_for('admin.custom_orders') }}"
+          style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+        <div>
+            <label for="filter_id" style="display: block; margin-bottom: 5px;">ID</label>
+            <input type="number" class="form-control" id="filter_id" name="id" value="{{ filter_id }}"
+                   placeholder="Номер заявки" style="width: 120px;">
+        </div>
+        <div>
+            <label for="filter_status" style="display: block; margin-bottom: 5px;">Статус</label>
+            <select class="form-select" id="filter_status" name="status" style="width: 150px;">
+                <option value="">Все</option>
+                <option value="new" {% if filter_status==
+                'new' %}selected{% endif %}>Новая</option>
+                <option value="in_progress" {% if filter_status==
+                'in_progress' %}selected{% endif %}>В работе</option>
+                <option value="completed" {% if filter_status==
+                'completed' %}selected{% endif %}>Выполнена</option>
+                <option value="cancelled" {% if filter_status==
+                'cancelled' %}selected{% endif %}>Отменена</option>
+            </select>
+        </div>
+        <div>
+            <label for="filter_date" style="display: block; margin-bottom: 5px;">Дата</label>
+            <input type="date" class="form-control" id="filter_date" name="date" value="{{ filter_date }}"
+                   style="width: 160px;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-sm">Применить</button>
+            <a href="{{ url_for('admin.custom_orders') }}" class="btn btn-sm"
+               style="background-color: #6c757d; color: white;">Сбросить</a>
+        </div>
+    </form>
+</div>
+
 {% if requests %}
 <div class="table-responsive">
     <table class="table">

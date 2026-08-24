@@ -5,6 +5,43 @@
 {% block content %}
 <h2>Заказы</h2>
 
+<!-- Фильтры -->
+<div class="filters mb-4">
+    <form method="GET" action="{{ url_for('admin.orders') }}"
+          style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+        <div>
+            <label for="filter_id" style="display: block; margin-bottom: 5px;">ID</label>
+            <input type="number" class="form-control" id="filter_id" name="id" value="{{ filter_id }}"
+                   placeholder="Номер заказа" style="width: 120px;">
+        </div>
+        <div>
+            <label for="filter_status" style="display: block; margin-bottom: 5px;">Статус</label>
+            <select class="form-select" id="filter_status" name="status" style="width: 150px;">
+                <option value="">Все</option>
+                <option value="new" {% if filter_status==
+                'new' %}selected{% endif %}>Новый</option>
+                <option value="processing" {% if filter_status==
+                'processing' %}selected{% endif %}>В обработке</option>
+                <option value="shipped" {% if filter_status==
+                'shipped' %}selected{% endif %}>Отправлен</option>
+                <option value="completed" {% if filter_status==
+                'completed' %}selected{% endif %}>Выполнен</option>
+                <option value="cancelled" {% if filter_status==
+                'cancelled' %}selected{% endif %}>Отменён</option>
+            </select>
+        </div>
+        <div>
+            <label for="filter_date" style="display: block; margin-bottom: 5px;">Дата</label>
+            <input type="date" class="form-control" id="filter_date" name="date" value="{{ filter_date }}"
+                   style="width: 160px;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-sm">Применить</button>
+            <a href="{{ url_for('admin.orders') }}" class="btn btn-sm" style="background-color: #6c757d; color: white;">Сбросить</a>
+        </div>
+    </form>
+</div>
+
 {% if orders %}
 <div class="table-responsive">
     <table class="table">
@@ -54,6 +91,6 @@
     </table>
 </div>
 {% else %}
-<p>Заказов пока нет.</p>
+<p>Заказов не найдено.</p>
 {% endif %}
 {% endblock %}
