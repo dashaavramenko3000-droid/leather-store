@@ -1,11 +1,10 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField, FileAllowed
 from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField, BooleanField
-from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp, EqualTo
+from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp, EqualTo, Optional
 
 
 # ---------- АДМИНИСТРАТИВНАЯ ЧАСТЬ ----------
-
 class LoginForm(FlaskForm):
     """Форма входа в админ-панель."""
     username = StringField('Логин', validators=[DataRequired()])
@@ -85,3 +84,18 @@ class CheckoutForm(FlaskForm):
         Length(max=200, message='Комментарий не должен превышать 200 символов')
     ])
     submit = SubmitField('Оформить заказ')
+
+
+class CustomOrderForm(FlaskForm):
+    name = StringField('Ваше имя', validators=[DataRequired(), Length(max=100)])
+    contact = StringField('Email или телефон', validators=[DataRequired(), Length(max=100)])
+    product_type = SelectField('Тип изделия', choices=[
+        ('', 'Выберите тип...'),
+        ('Кошелёк', 'Кошелёк'),
+        ('Сумка', 'Сумка'),
+        ('Обложка для документов', 'Обложка для документов'),
+        ('Кардхолдер', 'Кардхолдер'),
+        ('Другое', 'Другое')
+    ], validators=[Optional()])
+    description = TextAreaField('Опишите вашу идею', validators=[DataRequired(), Length(max=1000)])
+    submit = SubmitField('Отправить заявку')

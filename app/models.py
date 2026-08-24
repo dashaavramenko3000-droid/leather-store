@@ -7,7 +7,7 @@ from .extensions import db
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=True)  # для админа, может быть NULL
-    email = db.Column(db.String(120), unique=True, nullable=True)    # для покупателей
+    email = db.Column(db.String(120), unique=True, nullable=True)  # для покупателей
     password_hash = db.Column(db.String(200), nullable=False)
     full_name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
@@ -34,7 +34,8 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Integer, nullable=False)
     product_type = db.Column(db.String(50), nullable=False, default='Кошелёк')
-    images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan', order_by='ProductImage.order')
+    images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan',
+                             order_by='ProductImage.order')
 
     def __repr__(self):
         return f'<Product {self.name}>'
@@ -62,6 +63,8 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     total_price = db.Column(db.Integer, nullable=False)
     items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
+    status_history = db.relationship('OrderStatusHistory', back_populates='order', cascade='all, delete-orphan',
+                                     order_by='OrderStatusHistory.changed_at')
 
     def __repr__(self):
         return f'<Order {self.id}>'
@@ -85,3 +88,62 @@ class WishlistItem(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     product = db.relationship('Product', backref='wishlist_items')
+
+
+class CartItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='cart_items')
+    product = db.relationship('Product', backref='cart_items')
+
+    def __repr__(self):
+        return f'<CartItem {self.id}>'
+
+
+class CustomOrder(db.Model):
+    """Заявка на индивидуальный заказ."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # если авторизован
+    name = db.Column(db.String(100), nullable=False)
+    contact = db.Column(db.String(100), nullable=False)  # email или телефон
+    product_type = db.Column(db.String(50), nullable=True)  # выбранный тип изделия
+    description = db.Column(db.Text, nullable=False)  # пожелания клиента
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='custom_orders')
+    status = db.Column(db.String(20), nullable=False, default='new')
+    status_history = db.relationship('CustomOrderStatusHistory', back_populates='custom_order',
+                                     cascade='all, delete-orphan', order_by='CustomOrderStatusHistory.changed_at')
+
+    def __repr__(self):
+        return f'<CustomOrder {self.id}>'
+
+
+class OrderStatusHistory(db.Model):
+    """История изменения статусов заказа."""
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+    changed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    order = db.relationship('Order', back_populates='status_history')
+
+    def __repr__(self):
+        return f'<OrderStatusHistory {self.id} - {self.status}>'
+
+
+class CustomOrderStatusHistory(db.Model):
+    """История изменения статусов индивидуальной заявки."""
+    id = db.Column(db.Integer, primary_key=True)
+    custom_order_id = db.Column(db.Integer, db.ForeignKey('custom_order.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False)
+    changed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    custom_order = db.relationship('CustomOrder', back_populates='status_history')
+
+    def __repr__(self):
+        return f'<CustomOrderStatusHistory {self.id} - {self.status}>'

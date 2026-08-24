@@ -8,7 +8,7 @@
     <div class="container">
         <h1>Изделия из кожи<br>с ручным тиснением</h1>
         <p>Создаём уникальные аксессуары, которые хранят тепло рук мастера</p>
-        <a href="#catalog" class="btn">Смотреть каталог</a>
+        <a href="{{ url_for('main.catalog') }}" class="btn btn-hero">Смотреть каталог</a>
     </div>
 </section>
 
@@ -57,11 +57,13 @@
                                 <p>{{ product.description }}</p>
                                 <div class="product-actions">
                                     <!-- Кнопка "В корзину" -->
-                                    <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">В корзину</button>
+                                    <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">
+                                        В корзину
+                                    </button>
 
                                     <!-- Кнопка "В избранное" -->
-                                    <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}"
-                                          method="post">
+                                    <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}"
+                                          method="post" hx-boost="false">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button type="submit" class="btn btn-outline">♡</button>
                                     </form>

@@ -215,23 +215,23 @@ function addToCart(productId) {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Обновляем счётчик корзины в шапке
-            const cartCount = document.querySelector('.cart-count');
-            if (cartCount) {
-                cartCount.textContent = data.cart_total;
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем счётчик корзины в шапке
+                const cartCount = document.querySelector('.cart-count');
+                if (cartCount) {
+                    cartCount.textContent = data.cart_total;
+                }
+                // Можно показать всплывающее сообщение (например, через alert или кастомное)
+                // Простой вариант:
+                //alert(`Товар "${data.product_name}" добавлен в корзину`);
+            } else {
+                alert('Ошибка: ' + data.message);
             }
-            // Можно показать всплывающее сообщение (например, через alert или кастомное)
-            // Простой вариант:
-            //alert(`Товар "${data.product_name}" добавлен в корзину`);
-        } else {
-            alert('Ошибка: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка при добавлении товара');
-    });
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при добавлении товара');
+        });
 }

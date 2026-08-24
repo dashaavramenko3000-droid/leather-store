@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    /* Дополнительные стили для формы */
+    .custom-order-page {
+        background-color: var(--cream);
+    }
+
+    .custom-order-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .custom-order-header {
+        background: linear-gradient(135deg, var(--brown-dark) 0%, var(--brown-medium) 100%);
+        color: var(--cream);
+        padding: 30px;
+        text-align: center;
+    }
+
+    .custom-order-header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+    }
+
+    .custom-order-header p {
+        color: var(--beige);
+        font-size: 1rem;
+    }
+
+    .custom-order-body {
+        padding: 30px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--brown-dark);
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 10px 15px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 5px rgba(193, 154, 107, 0.5);
+    }
+
+    .btn-leather {
+        background-color: var(--accent);
+        border: none;
+        color: var(--brown-dark);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-leather:hover {
+        background-color: var(--brown-light);
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Индивидуальный заказ{% endblock %}
+
+{% block content %}
+<div class="custom-order-page py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card custom-order-card">
+                    <div class="custom-order-header">
+                        <h1>Индивидуальный заказ</h1>
+                        <p>Расскажите нам о своей идее, и мы воплотим её в коже</p>
+                    </div>
+                    <div class="card-body custom-order-body">
+                        <form method="POST" hx-boost="false">
+                            {{ form.hidden_tag() }}
+
+                            <div class="mb-4">
+                                {{ form.name.label(class="form-label") }}
+                                {{ form.name(class="form-control", placeholder="Как к вам обращаться?") }}
+                                {% for error in form.name.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form.contact.label(class="form-label") }}
+                                {{ form.contact(class="form-control", placeholder="Email или телефон") }}
+                                {% for error in form.contact.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form.product_type.label(class="form-label") }}
+                                {{ form.product_type(class="form-select") }}
+                                {% for error in form.product_type.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form.description.label(class="form-label") }}
+                                {{ form.description(class="form-control", rows=5, placeholder="Опишите изделие, которое хотите заказать: размер, цвет, тиснение, особенности...") }}
+                                {% for error in form.description.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <button type="submit" class="btn btn-leather w-100">Отправить заявку</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

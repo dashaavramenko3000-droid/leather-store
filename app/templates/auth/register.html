@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h2>Регистрация</h2>
-    <form method="POST">
+    <form method="POST" hx-boost="false">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.email.label }}<br>

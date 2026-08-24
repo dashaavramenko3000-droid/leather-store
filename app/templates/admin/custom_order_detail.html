@@ -1,0 +1,63 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Заявка #{{ custom_order.id }}{% endblock %}
+
+{% block content %}
+<h2>Заявка #{{ custom_order.id }}</h2>
+
+<p><strong>Дата:</strong> {{ custom_order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+<p><strong>Имя:</strong> {{ custom_order.name }}</p>
+<p><strong>Контакт:</strong> {{ custom_order.contact }}</p>
+<p><strong>Тип изделия:</strong> {{ custom_order.product_type or '—' }}</p>
+<p><strong>Текущий статус:</strong> {{ custom_order.status }}</p>
+<div style="white-space: pre-wrap;"><strong>Описание:</strong><br>{{ custom_order.description }}</div>
+
+<hr>
+
+<h4>Изменить статус</h4>
+<form method="POST" action="{{ url_for('admin.update_custom_order_status', order_id=custom_order.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <select name="status" class="form-control" style="max-width: 250px; display: inline-block; margin-right: 10px;">
+        <option value="new" {% if custom_order.status == 'new' %}selected{% endif %}>Новая</option>
+        <option value="in_progress" {% if custom_order.status == 'in_progress' %}selected{% endif %}>В работе</option>
+        <option value="completed" {% if custom_order.status == 'completed' %}selected{% endif %}>Выполнена</option>
+        <option value="cancelled" {% if custom_order.status == 'cancelled' %}selected{% endif %}>Отменена</option>
+    </select>
+    <button type="submit" class="btn">Сохранить статус</button>
+</form>
+
+<hr>
+
+<h4>История изменений статуса</h4>
+{% if custom_order.status_history %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Статус</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in custom_order.status_history %}
+        <tr>
+            <td>{{ entry.changed_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td>
+                {% if entry.status == 'new' %}Новая
+                {% elif entry.status == 'in_progress' %}В работе
+                {% elif entry.status == 'completed' %}Выполнена
+                {% elif entry.status == 'cancelled' %}Отменена
+                {% else %}{{ entry.status }}{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>История пуста.</p>
+{% endif %}
+
+<div class="btn-group" style="margin-top: 20px;">
+    <a href="{{ url_for('admin.custom_orders') }}" class="btn">Назад к списку</a>
+    <a href="{{ url_for('admin.delete_custom_order', order_id=custom_order.id) }}" class="btn btn-danger" onclick="return confirm('Удалить заявку?')">Удалить</a>
+</div>
+{% endblock %}

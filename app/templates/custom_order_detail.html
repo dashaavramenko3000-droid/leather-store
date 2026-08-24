@@ -1,0 +1,29 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Заявка #{{ custom_order.id }}{% endblock %}
+
+{% block content %}
+<h2>Заявка #{{ custom_order.id }}</h2>
+
+<div class="card" style="background: #fff; border-radius: 8px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <p><strong>Дата:</strong> {{ custom_order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+            <p><strong>Имя:</strong> {{ custom_order.name }}</p>
+            <p><strong>Контакт:</strong> {{ custom_order.contact }}</p>
+            <p><strong>Тип изделия:</strong> {{ custom_order.product_type or '—' }}</p>
+        </div>
+        <div>
+            <p><strong>Описание:</strong></p>
+            <p style="white-space: pre-wrap;">{{ custom_order.description }}</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('admin.custom_orders') }}" class="btn">Назад к списку</a>
+        <a href="{{ url_for('admin.delete_custom_order', order_id=custom_order.id) }}"
+           class="btn btn-danger"
+           onclick="return confirm('Удалить заявку?')">Удалить</a>
+    </div>
+</div>
+{% endblock %}

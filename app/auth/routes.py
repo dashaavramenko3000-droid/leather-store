@@ -1,8 +1,8 @@
-from flask import render_template, redirect, url_for, flash, request, abort
+from flask import render_template, redirect, url_for, flash, request, abort, session
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth_bp
 from ..extensions import db
-from ..models import User, Order, WishlistItem, Product
+from ..models import User, Order, WishlistItem, Product, CartItem
 from ..forms import CustomerLoginForm, RegistrationForm, UpdateProfileForm
 
 
@@ -26,8 +26,11 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('Регистрация успешна! Теперь войдите.', 'success')
-        return redirect(url_for('auth.login'))
+
+        # Автоматический вход после регистрации
+        login_user(user)
+        flash('Регистрация успешна! Вы вошли в свой аккаунт.', 'success')
+        return redirect(url_for('auth.account'))   # или url_for('main.home')
     return render_template('auth/register.html', form=form)
 
 
@@ -43,6 +46,19 @@ def login():
         ).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
+            guest_cart = session.get('cart', {})
+            if guest_cart:
+                for product_id, qty in guest_cart.items():
+                    product = db.session.get(Product, int(product_id))
+                    if product:
+                        existing_item = CartItem.query.filter_by(user_id=user.id, product_id=product_id).first()
+                        if existing_item:
+                            existing_item.quantity += qty
+                        else:
+                            new_item = CartItem(user_id=user.id, product_id=product_id, quantity=qty)
+                            db.session.add(new_item)
+                session.pop('cart', None)  # очищаем гостевую корзину
+                db.session.commit()
             flash('Вы вошли', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('main.home'))
