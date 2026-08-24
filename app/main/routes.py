@@ -372,3 +372,12 @@ def custom_order():
         flash('Ваша заявка отправлена! Мы свяжемся с вами в ближайшее время.', 'success')
         return redirect(url_for('main.home'))
     return render_template('custom_order.html', form=form)
+
+
+@main_bp.route('/product/<int:product_id>')
+def product_detail(product_id):
+    """Страница отдельного товара."""
+    product = db.session.get(Product, product_id)
+    if not product:
+        abort(404)
+    return render_template('product_detail.html', product=product)

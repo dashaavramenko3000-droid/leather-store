@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Страницы не существует{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+    <div class="error-code" style="font-size: 6rem; font-weight: 700; color: var(--brown-dark);">404</div>
+    <h1 class="display-4">Такой страницы не существует</h1>
+    <p class="lead">Кажется вы промахнулись страницей</p>
+    <a href="{{ url_for('main.home') }}" class="btn btn-primary btn-lg mt-3">Вернуться на главную</a>
+</div>
+{% endblock %}

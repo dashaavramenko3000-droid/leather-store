@@ -19,15 +19,26 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-3 col-md-2">
-                            {% set main_image = item.product.images|sort(attribute='order')|first %}
-                            {% if main_image %}
-                                <img src="{{ url_for('static', filename=main_image.image_path) }}" class="cart-item-img" alt="{{ item.product.name }}">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='img/placeholder.png') }}" class="cart-item-img" alt="Нет изображения">
-                            {% endif %}
+                            <a href="{{ url_for('main.product_detail', product_id=item.product.id) }}">
+                                {% set main_image = item.product.images|sort(attribute='order')|first %}
+                                {% if main_image %}
+                                <img src="{{ url_for('static', filename=main_image.image_path) }}"
+                                     class="img-fluid rounded"
+                                     alt="{{ item.product.name }}">
+                                {% else %}
+                                <img src="{{ url_for('static', filename='img/placeholder.png') }}"
+                                     class="img-fluid rounded"
+                                     alt="Нет изображения">
+                                {% endif %}
+                            </a>
                         </div>
                         <div class="col-9 col-md-4">
-                            <h5 class="card-title mb-1">{{ item.product.name }}</h5>
+                            <h5 class="card-title mb-1">
+                                <a href="{{ url_for('main.product_detail', product_id=item.product.id) }}"
+                                   class="text-decoration-none text-dark">
+                                    {{ item.product.name }}
+                                </a>
+                            </h5>
                             <p class="text-muted mb-1">{{ item.product.product_type }}</p>
                             <p class="fw-bold mb-0">{{ item.product.price }} ₽ / шт.</p>
                         </div>
@@ -35,10 +46,13 @@
                             <div class="quantity-control d-flex align-items-center gap-1">
                                 <button type="button" class="btn btn-outline-secondary btn-sm qty-btn"
                                         onclick="changeQuantity({{ item.product.id }}, -1)"
-                                        {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
-                                <span class="fw-bold mx-1 qty-value" id="qty-{{ item.product.id }}">{{ item.quantity }}</span>
+                                        {% if item.quantity
+                                <= 1 %}disabled{% endif %}>−</button>
+                                <span class="fw-bold mx-1 qty-value"
+                                      id="qty-{{ item.product.id }}">{{ item.quantity }}</span>
                                 <button type="button" class="btn btn-outline-secondary btn-sm qty-btn"
-                                        onclick="changeQuantity({{ item.product.id }}, 1)">+</button>
+                                        onclick="changeQuantity({{ item.product.id }}, 1)">+
+                                </button>
                             </div>
                         </div>
                         <div class="col-4 col-md-2 text-end mt-3 mt-md-0">
@@ -77,7 +91,8 @@
                         <span id="cart-total">{{ total }} ₽</span>
                     </div>
                     <a href="{{ url_for('main.checkout') }}" class="btn btn-primary w-100 mt-3">Оформить заказ</a>
-                    <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить покупки</a>
+                    <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить
+                        покупки</a>
                 </div>
             </div>
         </div>
@@ -95,68 +110,68 @@
 
 {% block extra_js %}
 <script>
-function changeQuantity(productId, delta) {
-    const qtyElement = document.getElementById(`qty-${productId}`);
-    let currentQty = parseInt(qtyElement.textContent);
-    let newQty = currentQty + delta;
-    if (newQty < 1) return;
+    function changeQuantity(productId, delta) {
+        const qtyElement = document.getElementById(`qty-${productId}`);
+        let currentQty = parseInt(qtyElement.textContent);
+        let newQty = currentQty + delta;
+        if (newQty < 1) return;
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    fetch(`/cart/update_ajax/${productId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrfToken
-        },
-        body: `quantity=${encodeURIComponent(newQty)}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            qtyElement.textContent = data.quantity;
-            document.getElementById(`subtotal-${productId}`).textContent = data.subtotal + ' ₽';
-            document.getElementById('cart-total').textContent = data.total + ' ₽';
-            document.getElementById('cart-total-items').textContent = data.total + ' ₽';
-            const cartCount = document.querySelector('.cart-count');
-            if (cartCount) cartCount.textContent = data.cart_total;
-            const minusBtn = document.querySelector(`#cart-item-${productId} .qty-btn[onclick*="changeQuantity(${productId}, -1)"]`);
-            if (minusBtn) minusBtn.disabled = data.quantity <= 1;
-        }
-    })
-    .catch(error => console.error('Ошибка сети:', error));
-}
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch(`/cart/update_ajax/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: `quantity=${encodeURIComponent(newQty)}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    qtyElement.textContent = data.quantity;
+                    document.getElementById(`subtotal-${productId}`).textContent = data.subtotal + ' ₽';
+                    document.getElementById('cart-total').textContent = data.total + ' ₽';
+                    document.getElementById('cart-total-items').textContent = data.total + ' ₽';
+                    const cartCount = document.querySelector('.cart-count');
+                    if (cartCount) cartCount.textContent = data.cart_total;
+                    const minusBtn = document.querySelector(`#cart-item-${productId} .qty-btn[onclick*="changeQuantity(${productId}, -1)"]`);
+                    if (minusBtn) minusBtn.disabled = data.quantity <= 1;
+                }
+            })
+            .catch(error => console.error('Ошибка сети:', error));
+    }
 
-function removeFromCart(productId) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    fetch(`/cart/remove_ajax/${productId}`, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': csrfToken }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const card = document.getElementById(`cart-item-${productId}`);
-            if (card) card.remove();
-            document.getElementById('cart-total').textContent = data.total + ' ₽';
-            document.getElementById('cart-total-items').textContent = data.total + ' ₽';
-            const cartCount = document.querySelector('.cart-count');
-            if (cartCount) cartCount.textContent = data.cart_total;
-            if (data.cart_total === 0) {
-                const container = document.querySelector('.row.g-4');
-                if (container) container.innerHTML = '';
-                const emptyDiv = document.createElement('div');
-                emptyDiv.className = 'text-center py-5';
-                emptyDiv.innerHTML = `
+    function removeFromCart(productId) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        fetch(`/cart/remove_ajax/${productId}`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken}
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const card = document.getElementById(`cart-item-${productId}`);
+                    if (card) card.remove();
+                    document.getElementById('cart-total').textContent = data.total + ' ₽';
+                    document.getElementById('cart-total-items').textContent = data.total + ' ₽';
+                    const cartCount = document.querySelector('.cart-count');
+                    if (cartCount) cartCount.textContent = data.cart_total;
+                    if (data.cart_total === 0) {
+                        const container = document.querySelector('.row.g-4');
+                        if (container) container.innerHTML = '';
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.className = 'text-center py-5';
+                        emptyDiv.innerHTML = `
                     <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
                     <h2>Ваша корзина пуста</h2>
                     <p class="text-muted">Добавьте товары из каталога, чтобы сделать заказ.</p>
                     <a href="{{ url_for('main.catalog') }}" class="btn btn-primary btn-lg">Перейти в каталог</a>
                 `;
-                document.querySelector('.container.my-5').appendChild(emptyDiv);
-            }
-        }
-    })
-    .catch(error => console.error('Ошибка сети:', error));
-}
+                        document.querySelector('.container.my-5').appendChild(emptyDiv);
+                    }
+                }
+            })
+            .catch(error => console.error('Ошибка сети:', error));
+    }
 </script>
 {% endblock %}

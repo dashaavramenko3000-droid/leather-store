@@ -43,4 +43,8 @@ def create_app(config_class=Config):
     def forbidden(e):
         return render_template('403.html'), 403
 
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template('404.html'), 404
+
     return app
