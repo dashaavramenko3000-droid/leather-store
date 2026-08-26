@@ -1,33 +1,143 @@
 {% extends 'base.html' %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .orders-page {
+        padding: 40px 0;
+    }
+    .orders-page h2 {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+        color: var(--brown-dark);
+        font-family: 'Playfair Display', serif;
+    }
+    .section-title {
+        font-size: 1.5rem;
+        color: var(--brown-medium);
+        margin: 25px 0 15px;
+    }
+    .table {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .table thead {
+        background-color: var(--brown-medium);
+        color: var(--cream);
+    }
+    .table th, .table td {
+        padding: 12px 15px;
+        vertical-align: middle;
+    }
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+    .table tbody tr:hover {
+        background-color: #faf5ec;
+    }
+    .badge-status {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .badge-new { background: #d1ecf1; color: #0c5460; }
+    .badge-processing { background: #fff3cd; color: #856404; }
+    .badge-shipped { background: #cce5ff; color: #004085; }
+    .badge-completed { background: #d4edda; color: #155724; }
+    .badge-cancelled { background: #f8d7da; color: #721c24; }
+    .no-orders {
+        text-align: center;
+        color: #777;
+        font-size: 1.1rem;
+        padding: 30px 0;
+    }
+    @media (max-width: 768px) {
+        .table-responsive {
+            overflow-x: auto;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block title %}Мои заказы{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="container orders-page">
     <h2>Мои заказы</h2>
+
+    <!-- Обычные заказы -->
     {% if orders %}
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Номер</th>
-                <th>Дата</th>
-                <th>Статус</th>
-                <th>Сумма</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>#{{ order.id }}</td>
-                <td>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                <td>{{ order.status }}</td>
-                <td>{{ order.total_price }} ₽</td>
-                <td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}">Подробнее</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>У вас пока нет заказов.</p>
+        <div class="section-title">Заказы</div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Номер</th>
+                        <th>Дата</th>
+                        <th>Статус</th>
+                        <th>Сумма</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            <span class="badge-status badge-{{ order.status }}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td>{{ order.total_price }} ₽</td>
+                        <td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}" hx-boost="false" class="btn btn-sm btn-outline">Подробнее</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <!-- Индивидуальные заявки -->
+    {% if custom_orders %}
+        <div class="section-title">Индивидуальные заявки</div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Номер</th>
+                        <th>Дата</th>
+                        <th>Статус</th>
+                        <th>Описание</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for custom in custom_orders %}
+                    <tr>
+                        <td>#{{ custom.id }}</td>
+                        <td>{{ custom.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>
+                            <span class="badge-status badge-{{ custom.status }}">
+                                {{ custom.status }}
+                            </span>
+                        </td>
+                        <td>{{ custom.description|truncate(50) }}</td>
+                        <td><a href="{{ url_for('auth.custom_order_detail', order_id=custom.id) }}" hx-boost="false" class="btn btn-sm btn-outline">Подробнее</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if not orders and not custom_orders %}
+        <p class="no-orders">У вас пока нет заказов.</p>
     {% endif %}
 </div>
 {% endblock %}

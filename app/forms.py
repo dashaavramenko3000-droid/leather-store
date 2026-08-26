@@ -1,19 +1,22 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import MultipleFileField, FileAllowed
+from flask_wtf.file import MultipleFileField, FileAllowed, FileField
 from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp, EqualTo, Optional
 
 
-# ---------- АДМИНИСТРАТИВНАЯ ЧАСТЬ ----------
+# ======================================================================
+#  АДМИНИСТРАТИВНАЯ ЧАСТЬ
+# ======================================================================
+
 class LoginForm(FlaskForm):
-    """Форма входа в админ-панель."""
+    """Форма входа в админ-панель (по логину)."""
     username = StringField('Логин', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     submit = SubmitField('Войти')
 
 
 class ProductForm(FlaskForm):
-    """Форма добавления/редактирования товара."""
+    """Форма добавления/редактирования товара (с несколькими фото)."""
     name = StringField('Название', validators=[DataRequired(), Length(max=200)])
     product_type = SelectField('Тип изделия', choices=[
         ('Кошелёк', 'Кошелёк'),
@@ -29,7 +32,9 @@ class ProductForm(FlaskForm):
     submit = SubmitField('Сохранить')
 
 
-# ---------- ПОКУПАТЕЛЬСКАЯ ЧАСТЬ ----------
+# ======================================================================
+#  ПОКУПАТЕЛЬСКАЯ ЧАСТЬ
+# ======================================================================
 
 class CustomerLoginForm(FlaskForm):
     """Форма входа для покупателей (по email или имени пользователя)."""
@@ -62,7 +67,7 @@ class UpdateProfileForm(FlaskForm):
 
 
 class CheckoutForm(FlaskForm):
-    """Форма оформления заказа."""
+    """Форма оформления заказа (контактные данные и адрес)."""
     customer_name = StringField('Имя', validators=[
         DataRequired(message='Пожалуйста, укажите ваше имя'),
         Length(max=50, message='Имя не должно превышать 50 символов')
@@ -87,6 +92,7 @@ class CheckoutForm(FlaskForm):
 
 
 class CustomOrderForm(FlaskForm):
+    """Форма заявки на индивидуальный заказ (с возможностью прикрепить фото)."""
     name = StringField('Ваше имя', validators=[DataRequired(), Length(max=100)])
     contact = StringField('Email или телефон', validators=[DataRequired(), Length(max=100)])
     product_type = SelectField('Тип изделия', choices=[
@@ -98,4 +104,23 @@ class CustomOrderForm(FlaskForm):
         ('Другое', 'Другое')
     ], validators=[Optional()])
     description = TextAreaField('Опишите вашу идею', validators=[DataRequired(), Length(max=1000)])
+    image = FileField('Фото изделия', validators=[
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')
+    ])
     submit = SubmitField('Отправить заявку')
+
+
+class ResetPasswordRequestForm(FlaskForm):
+    """Форма запроса на сброс пароля (ввод email)."""
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Отправить')
+
+
+class ResetPasswordForm(FlaskForm):
+    """Форма установки нового пароля."""
+    password = PasswordField('Новый пароль', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Повторите пароль', validators=[
+        DataRequired(),
+        EqualTo('password', message='Пароли должны совпадать')
+    ])
+    submit = SubmitField('Сохранить')

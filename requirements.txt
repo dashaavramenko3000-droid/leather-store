@@ -8,5 +8,6 @@ Pillow>=10.3.0
 Flask-Migrate==4.0.7
 PyMySQL>=1.1.0
 Flask-Caching==2.3.0
+Flask-Mail==0.9.1
 
 

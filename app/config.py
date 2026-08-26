@@ -21,3 +21,12 @@ class Config:
 
     # Отладка
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+
+    MAIL_SERVER = 'smtp.yandex.ru'  # пример
+    MAIL_PORT = 465
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
+    MAIL_USERNAME = 'your_email@yandex.ru'
+    MAIL_PASSWORD = 'your_password'
+
+    MAX_CONTENT_LENGTH = 20 * 1024 * 1024  # 20 МБ

@@ -1,5 +1,7 @@
 from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort
 from flask_login import current_user
+
+from ..utils import save_image
 from . import main_bp
 from ..extensions import db
 from ..models import Product, Order, OrderItem, CartItem, CustomOrder
@@ -360,12 +362,19 @@ def add_to_cart_ajax(product_id):
 def custom_order():
     form = CustomOrderForm()
     if form.validate_on_submit():
+
+        if form.image.data:
+            image_path = save_image(form.image.data)
+        else:
+            image_path = None
+
         custom_order = CustomOrder(
             user_id=current_user.id if current_user.is_authenticated else None,
             name=form.name.data,
             contact=form.contact.data,
             product_type=form.product_type.data or None,
-            description=form.description.data
+            description=form.description.data,
+            image_path=image_path
         )
         db.session.add(custom_order)
         db.session.commit()

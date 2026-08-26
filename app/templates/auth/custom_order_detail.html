@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    /* Контейнер страницы */
+    .custom-order-detail-wrapper {
+        padding: 40px 0;
+    }
+
+    /* Карточка заказа */
+    .custom-order-card {
+        max-width: 800px;
+        margin: 0 auto;
+        background: var(--white);
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+    }
+
+    /* Шапка заказа */
+    .order-header {
+        border-bottom: 2px solid var(--beige);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .order-header h2 {
+        font-family: 'Playfair Display', serif;
+        color: var(--brown-dark);
+        margin-bottom: 5px;
+    }
+    .order-meta {
+        color: #777;
+        font-size: 0.9rem;
+    }
+
+    /* Строка информации */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .info-label {
+        font-weight: 600;
+        color: var(--brown-medium);
+    }
+    .info-value {
+        color: var(--text);
+        text-align: right;
+        max-width: 60%;
+    }
+
+    /* Описание */
+    .description-block {
+        white-space: pre-wrap;
+        color: #555;
+        line-height: 1.6;
+        margin-top: 15px;
+    }
+
+    /* Бейдж статуса */
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .status-new { background: #d1ecf1; color: #0c5460; }
+    .status-in_progress { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+
+    /* Фото */
+    .photo-container {
+        margin-top: 15px;
+    }
+    .photo-container img {
+        max-width: 300px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .photo-container img:hover {
+        transform: scale(1.02);
+    }
+
+    /* Ссылка назад */
+    .btn-back {
+        display: inline-block;
+        margin-top: 20px;
+        color: var(--brown-light);
+        text-decoration: none;
+    }
+    .btn-back:hover {
+        color: var(--brown-dark);
+        text-decoration: underline;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 576px) {
+        .info-row {
+            flex-direction: column;
+        }
+        .info-value {
+            text-align: left;
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block title %}Индивидуальный заказ #{{ custom_order.id }}{% endblock %}
+
+{% block content %}
+<div class="custom-order-detail-wrapper">
+    <div class="custom-order-card">
+        <div class="order-header">
+            <h2>Индивидуальный заказ #{{ custom_order.id }}</h2>
+            <div class="order-meta">Создан: {{ custom_order.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+        </div>
+
+        <div class="info-row">
+            <span class="info-label">Статус</span>
+            <span class="info-value">
+                <span class="status-badge status-{{ custom_order.status }}">
+                    {% if custom_order.status == 'new' %}Новая
+                    {% elif custom_order.status == 'in_progress' %}В работе
+                    {% elif custom_order.status == 'completed' %}Выполнена
+                    {% elif custom_order.status == 'cancelled' %}Отменена
+                    {% else %}{{ custom_order.status }}{% endif %}
+                </span>
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Имя</span>
+            <span class="info-value">{{ custom_order.name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Контакт</span>
+            <span class="info-value">{{ custom_order.contact }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Тип изделия</span>
+            <span class="info-value">{{ custom_order.product_type or '—' }}</span>
+        </div>
+
+        <div class="description-block">
+            <strong>Описание:</strong><br>
+            {{ custom_order.description }}
+        </div>
+
+        {% if custom_order.image_path %}
+        <div class="photo-container">
+            <strong>Фото:</strong><br>
+            <a href="{{ url_for('static', filename=custom_order.image_path) }}" target="_blank">
+                <img src="{{ url_for('static', filename=custom_order.image_path) }}" alt="Фото заявки">
+            </a>
+        </div>
+        {% endif %}
+
+        <a href="{{ url_for('auth.orders') }}" class="btn-back">← Назад к списку заказов</a>
+    </div>
+</div>
+{% endblock %}

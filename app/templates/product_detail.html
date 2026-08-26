@@ -1,18 +1,24 @@
 {% extends 'base.html' %}
 
 {% block extra_css %}
+<!-- Подключаем Bootstrap для сетки и галереи -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
+    /* Страница товара: фон и отступы */
     .product-detail-page {
         background-color: var(--cream);
         padding: 40px 0;
     }
+
+    /* Карточка галереи изображений */
     .product-gallery {
         background: #fff;
         border-radius: 12px;
         padding: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     }
+
+    /* Главное изображение товара */
     .product-gallery .main-image {
         width: 100%;
         max-height: 500px;
@@ -22,8 +28,10 @@
         transition: transform 0.3s;
     }
     .product-gallery .main-image:hover {
-        transform: scale(1.02);
+        transform: scale(1.02); /* лёгкое увеличение при наведении */
     }
+
+    /* Миниатюры изображений */
     .thumbnail {
         width: 70px;
         height: 70px;
@@ -34,23 +42,29 @@
         transition: border-color 0.3s, transform 0.3s;
     }
     .thumbnail:hover {
-        transform: translateY(-2px);
+        transform: translateY(-2px); /* приподнимаем миниатюру */
     }
     .thumbnail.active {
-        border-color: var(--accent);
+        border-color: var(--accent); /* подсветка активной миниатюры */
     }
+
+    /* Блок с информацией о товаре */
     .product-info {
         background: #fff;
         border-radius: 12px;
         padding: 30px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     }
+
+    /* Заголовок товара */
     .product-title {
         font-family: 'Playfair Display', serif;
         font-size: 2.5rem;
         color: var(--brown-dark);
         margin-bottom: 10px;
     }
+
+    /* Бейдж типа изделия */
     .product-type {
         display: inline-block;
         background-color: var(--beige);
@@ -61,25 +75,33 @@
         font-size: 0.9rem;
         margin-bottom: 15px;
     }
+
+    /* Цена */
     .product-price {
         font-size: 2rem;
         font-weight: 700;
         color: var(--brown-medium);
         margin-bottom: 20px;
     }
+
+    /* Описание товара */
     .product-description {
         color: #555;
         line-height: 1.7;
-        white-space: pre-wrap;
+        white-space: pre-wrap; /* сохраняем переносы строк */
     }
+
+    /* Кнопки действий */
     .product-actions {
         display: flex;
         gap: 10px;
         margin-top: 20px;
     }
     .product-actions .btn {
-        flex: 1;
+        flex: 1; /* кнопки занимают равную ширину */
     }
+
+    /* Ссылка назад */
     .btn-link {
         color: var(--brown-light);
         text-decoration: none;
@@ -87,9 +109,11 @@
     .btn-link:hover {
         color: var(--brown-dark);
     }
+
+    /* Адаптация для мобильных */
     @media (max-width: 768px) {
         .product-actions {
-            flex-direction: column;
+            flex-direction: column; /* кнопки друг под другом */
         }
     }
 </style>
@@ -101,28 +125,38 @@
 <div class="product-detail-page">
     <div class="container">
         <div class="row g-4">
-            <!-- Галерея изображений -->
+            <!-- Левая колонка: галерея -->
             <div class="col-lg-6">
                 <div class="product-gallery">
                     {% if product.images %}
                         {% set main_image = product.images|sort(attribute='order')|first %}
-                        <img src="{{ url_for('static', filename=main_image.image_path) }}" alt="{{ product.name }}" class="main-image" id="main-product-image">
+                        <!-- Главное изображение -->
+                        <img src="{{ url_for('static', filename=main_image.image_path) }}"
+                             alt="{{ product.name }}"
+                             class="main-image"
+                             id="main-product-image">
+
                         {% if product.images|length > 1 %}
+                            <!-- Миниатюры, появляются только если фото больше одного -->
                             <div class="d-flex gap-2 flex-wrap mt-3">
                                 {% for image in product.images|sort(attribute='order') %}
                                     <img src="{{ url_for('static', filename=image.image_path) }}"
                                          class="thumbnail {% if loop.first %}active{% endif %}"
+                                         alt="Миниатюра {{ loop.index }}"
                                          onclick="document.getElementById('main-product-image').src = this.src; document.querySelectorAll('.thumbnail').forEach(el => el.classList.remove('active')); this.classList.add('active');">
                                 {% endfor %}
                             </div>
                         {% endif %}
                     {% else %}
-                        <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения" class="main-image">
+                        <!-- Заглушка, если нет изображений -->
+                        <img src="{{ url_for('static', filename='img/placeholder.png') }}"
+                             alt="Нет изображения"
+                             class="main-image">
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Информация о товаре -->
+            <!-- Правая колонка: информация -->
             <div class="col-lg-6">
                 <div class="product-info">
                     <h1 class="product-title">{{ product.name }}</h1>
@@ -130,6 +164,7 @@
                     <div class="product-price">{{ product.price }} ₽</div>
                     <div class="product-description">{{ product.description }}</div>
 
+                    <!-- Кнопки добавления в корзину и избранное -->
                     <div class="product-actions">
                         <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post" hx-boost="false">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

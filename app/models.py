@@ -14,9 +14,10 @@ class User(UserMixin, db.Model):
     address = db.Column(db.String(200))
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
     orders = db.relationship('Order', backref='customer', lazy=True)
     wishlist_items = db.relationship('WishlistItem', backref='user', lazy=True, cascade='all, delete-orphan')
+    reset_token = db.Column(db.String(100), unique=True, nullable=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -113,7 +114,7 @@ class CustomOrder(db.Model):
     product_type = db.Column(db.String(50), nullable=True)  # выбранный тип изделия
     description = db.Column(db.Text, nullable=False)  # пожелания клиента
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    image_path = db.Column(db.String(500), nullable=True)  # путь к загруженному фото
     user = db.relationship('User', backref='custom_orders')
     status = db.Column(db.String(20), nullable=False, default='new')
     status_history = db.relationship('CustomOrderStatusHistory', back_populates='custom_order',

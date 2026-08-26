@@ -48,8 +48,19 @@ def logout():
 def dashboard():
     product_count = Product.query.count()
     order_count = Order.query.count()
-    return render_template('admin/dashboard.html', product_count=product_count, order_count=order_count)
+    custom_orders_count = CustomOrder.query.count()  # количество индивидуальных заявок
+    completed_orders_total = (
+        Order.query.filter_by(status='completed').count() +
+        CustomOrder.query.filter_by(status='completed').count()
+    )  # выполненные заказы всех типов
 
+    return render_template(
+        'admin/dashboard.html',
+        product_count=product_count,
+        order_count=order_count,
+        custom_orders_count=custom_orders_count,
+        completed_orders_total=completed_orders_total,
+    )
 
 @admin_bp.route('/products')
 @admin_required
