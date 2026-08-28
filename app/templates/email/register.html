@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f2e7; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #2c1e14;">Добро пожаловать, {{ user.full_name or user.email }}!</h2>
+        <p style="color: #3b2a1a;">Вы успешно зарегистрировались на сайте «Кожаная мастерская».</p>
+        <p style="color: #777;">Теперь вы можете сохранять избранное, отслеживать заказы и быстрее оформлять покупки.</p>
+        <p><a href="{{ url_for('main.home', _external=True) }}">Перейти на сайт</a></p>
+    </div>
+</body>
+</html>

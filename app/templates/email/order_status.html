@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f2e7; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 8px; padding: 30px;">
+        <h2>Статус вашего заказа #{{ order.id }} изменён</h2>
+        <p>Новый статус: <strong>{{ order.status }}</strong></p>
+        <p><a href="{{ url_for('auth.order_detail', order_id=order.id, _external=True) }}">Подробнее</a></p>
+    </div>
+</body>
+</html>

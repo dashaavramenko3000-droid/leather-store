@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f2e7; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 8px; padding: 30px;">
+        <h2>Заказ #{{ order.id }} оформлен</h2>
+        <p>Спасибо за ваш заказ! Мы свяжемся с вами для подтверждения.</p>
+        <p><strong>Сумма:</strong> {{ order.total_price }} ₽</p>
+        <p><strong>Статус:</strong> {{ order.status }}</p>
+        <h4>Состав заказа:</h4>
+        <ul>
+            {% for item in order.items %}
+            <li>{{ item.product_name }} × {{ item.quantity }} = {{ item.price * item.quantity }} ₽</li>
+            {% endfor %}
+        </ul>
+        <p><a href="{{ url_for('auth.order_detail', order_id=order.id, _external=True) }}">Посмотреть заказ</a></p>
+    </div>
+</body>
+</html>

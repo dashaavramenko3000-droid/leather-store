@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from flask import render_template, redirect, url_for, flash, request, abort, session
 from flask_login import login_user, logout_user, login_required, current_user
 
+from email_utils import send_email
 from . import auth_bp
 from ..extensions import db
 from ..models import User, Order, WishlistItem, Product, CartItem, CustomOrder, OrderMessage, CustomOrderMessage
@@ -52,6 +53,12 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
+        send_email(
+            'Добро пожаловать в Кожаную мастерскую!',
+            [user.email],
+            'email/register.html',
+            user=user
+        )
 
         # Автоматический вход после регистрации
         login_user(user)
@@ -261,7 +268,13 @@ def reset_password_request():
 
             # В реальном приложении здесь будет отправка письма через Flask-Mail
             reset_url = url_for('auth.reset_password', token=token, _external=True)
-            flash(f'Ссылка для сброса пароля: {reset_url}', 'info')
+            send_email(
+                'Восстановление пароля',
+                [user.email],
+                'email/reset_password.html',
+                reset_url=reset_url
+            )
+            flash('Инструкция отправлена на ваш email.', 'info')
         else:
             # Не раскрываем, существует ли email, чтобы избежать перебора
             flash('Если такой email зарегистрирован, на него отправлено письмо.', 'info')

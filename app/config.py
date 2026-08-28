@@ -22,11 +22,13 @@ class Config:
     # Отладка
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
 
-    MAIL_SERVER = 'smtp.yandex.ru'  # пример
-    MAIL_PORT = 465
-    MAIL_USE_TLS = False
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.yandex.ru')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', 465))
     MAIL_USE_SSL = True
-    MAIL_USERNAME = 'your_email@yandex.ru'
-    MAIL_PASSWORD = 'your_password'
+    MAIL_USE_TLS = False
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'your_email@yandex.ru')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'your_password')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'your_email@yandex.ru')
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
 
     MAX_CONTENT_LENGTH = 20 * 1024 * 1024  # 20 МБ

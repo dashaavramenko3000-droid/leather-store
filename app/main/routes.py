@@ -1,7 +1,8 @@
-from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort
+from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort, current_app
 from flask_login import current_user
 from sqlalchemy import func
 
+from email_utils import send_email
 from ..utils import save_image
 from . import main_bp
 from ..extensions import db
@@ -305,7 +306,22 @@ def checkout():
             db.session.add(order_item)
 
         db.session.commit()
-
+        # клиенту
+        send_email(
+            f'Заказ #{order.id} оформлен',
+            [order.customer_email],
+            'email/order_confirmation.html',
+            order=order
+        )
+        # администратору
+        admin_email = current_app.config.get('ADMIN_EMAIL')
+        if admin_email:
+            send_email(
+                f'Новый заказ #{order.id}',
+                [admin_email],
+                'email/order_confirmation.html',  # можно отдельный шаблон для админа
+                order=order
+            )
         # Очищаем корзину
         if current_user.is_authenticated:
             CartItem.query.filter_by(user_id=current_user.id).delete()

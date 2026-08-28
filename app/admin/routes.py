@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from functools import wraps
 from flask import render_template, redirect, url_for, flash, request, abort
 from flask_login import login_user, logout_user, current_user
+
+from email_utils import send_email
 from . import admin_bp
 from ..forms import LoginForm, ProductForm
 from ..utils import save_image, delete_image_file
@@ -307,6 +309,13 @@ def update_order_status(order_id):
     history = OrderStatusHistory(order_id=order.id, status=new_status)
     db.session.add(history)
     db.session.commit()
+    if order.customer_email:
+        send_email(
+            f'Статус заказа #{order.id} изменён',
+            [order.customer_email],
+            'email/order_status.html',
+            order=order
+        )
 
     flash('Статус заказа обновлён', 'success')
     return redirect(url_for('admin.order_detail', order_id=order.id))
