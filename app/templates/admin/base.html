@@ -332,6 +332,34 @@
         .admin-content textarea {
             resize: vertical;
         }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .bg-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .bg-secondary {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
     </style>
 </head>
 <body>
@@ -347,6 +375,7 @@
                 <li><a href="{{ url_for('admin.products') }}">Товары</a></li>
                 <li><a href="{{ url_for('admin.orders') }}">Заказы</a></li>
                 <li><a href="{{ url_for('admin.custom_orders') }}">Заявки</a></li>
+                <li><a href="{{ url_for('admin.reviews') }}">Отзывы</a></li>
                 <li><a href="{{ url_for('admin.logout') }}">Выйти</a></li>
             </ul>
         </nav>

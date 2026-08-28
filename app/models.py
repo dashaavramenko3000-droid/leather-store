@@ -184,3 +184,21 @@ class CustomOrderMessage(db.Model):
 
     def __repr__(self):
         return f'<CustomOrderMessage {self.id}>'
+
+
+class Review(db.Model):
+    """Отзыв покупателя о товаре."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # от 1 до 5
+    text = db.Column(db.Text, nullable=False)
+    is_approved = db.Column(db.Boolean, default=False)  # модерация
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='reviews')
+    product = db.relationship('Product', backref='reviews')
+    image_path = db.Column(db.String(500), nullable=True)
+
+    def __repr__(self):
+        return f'<Review {self.id} - {self.rating}>'

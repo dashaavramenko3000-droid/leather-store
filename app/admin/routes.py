@@ -5,7 +5,8 @@ from flask_login import login_user, logout_user, current_user
 from . import admin_bp
 from ..forms import LoginForm, ProductForm
 from ..utils import save_image, delete_image_file
-from ..models import db, Product, ProductImage, User, Order, CustomOrder, OrderStatusHistory, CustomOrderStatusHistory, OrderMessage, CustomOrderMessage
+from ..models import db, Product, ProductImage, User, Order, CustomOrder, OrderStatusHistory, CustomOrderStatusHistory, \
+    OrderMessage, CustomOrderMessage, Review
 
 
 def admin_required(f):
@@ -50,8 +51,8 @@ def dashboard():
     order_count = Order.query.count()
     custom_orders_count = CustomOrder.query.count()  # количество индивидуальных заявок
     completed_orders_total = (
-        Order.query.filter_by(status='completed').count() +
-        CustomOrder.query.filter_by(status='completed').count()
+            Order.query.filter_by(status='completed').count() +
+            CustomOrder.query.filter_by(status='completed').count()
     )  # выполненные заказы всех типов
 
     return render_template(
@@ -61,6 +62,7 @@ def dashboard():
         custom_orders_count=custom_orders_count,
         completed_orders_total=completed_orders_total,
     )
+
 
 @admin_bp.route('/products')
 @admin_required
@@ -330,3 +332,46 @@ def update_custom_order_status(order_id):
 
     flash('Статус заявки обновлён', 'success')
     return redirect(url_for('admin.custom_order_detail', order_id=custom_order.id))
+
+
+@admin_bp.route('/reviews')
+@admin_required
+def reviews():
+    all_reviews = Review.query.order_by(Review.created_at.desc()).all()
+    return render_template('admin/reviews.html', reviews=all_reviews)
+
+
+@admin_bp.route('/reviews/<int:review_id>/approve')
+@admin_required
+def approve_review(review_id):
+    review = db.session.get(Review, review_id)
+    if not review:
+        abort(404)
+    review.is_approved = True
+    db.session.commit()
+    flash('Отзыв одобрен', 'success')
+    return redirect(url_for('admin.reviews'))
+
+
+@admin_bp.route('/reviews/<int:review_id>/disapprove')
+@admin_required
+def disapprove_review(review_id):
+    review = db.session.get(Review, review_id)
+    if not review:
+        abort(404)
+    review.is_approved = False
+    db.session.commit()
+    flash('Отзыв снят с публикации', 'warning')
+    return redirect(url_for('admin.reviews'))
+
+
+@admin_bp.route('/reviews/<int:review_id>/delete')
+@admin_required
+def delete_review(review_id):
+    review = db.session.get(Review, review_id)
+    if not review:
+        abort(404)
+    db.session.delete(review)
+    db.session.commit()
+    flash('Отзыв удалён', 'success')
+    return redirect(url_for('admin.reviews'))

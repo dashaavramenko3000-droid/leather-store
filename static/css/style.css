@@ -1694,3 +1694,33 @@ textarea:focus {
 .chat-form .btn {
     /* используем существующий класс .btn из style.css */
 }
+
+
+/* Стили для блока отзывов */
+    .reviews-section {
+        margin-top: 40px;
+    }
+    .average-rating {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--brown-dark);
+    }
+    .stars {
+        color: #f8c146;
+        font-size: 1.5rem;
+    }
+    .review-item {
+        background: #fff;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .review-author {
+        font-weight: 600;
+        color: var(--brown-medium);
+    }
+    .review-text {
+        color: #555;
+        white-space: pre-wrap;
+    }

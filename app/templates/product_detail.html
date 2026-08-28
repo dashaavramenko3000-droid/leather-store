@@ -10,29 +10,29 @@
             <div class="col-lg-6">
                 <div class="product-gallery">
                     {% if product.images %}
-                        {% set main_image = product.images|sort(attribute='order')|first %}
-                        <!-- Главное изображение -->
-                        <img src="{{ url_for('static', filename=main_image.image_path) }}"
-                             alt="{{ product.name }}"
-                             class="main-image"
-                             id="main-product-image">
+                    {% set main_image = product.images|sort(attribute='order')|first %}
+                    <!-- Главное изображение -->
+                    <img src="{{ url_for('static', filename=main_image.image_path) }}"
+                         alt="{{ product.name }}"
+                         class="main-image"
+                         id="main-product-image">
 
-                        {% if product.images|length > 1 %}
-                            <!-- Миниатюры, появляются только если фото больше одного -->
-                            <div class="d-flex gap-2 flex-wrap mt-3">
-                                {% for image in product.images|sort(attribute='order') %}
-                                    <img src="{{ url_for('static', filename=image.image_path) }}"
-                                         class="thumbnail {% if loop.first %}active{% endif %}"
-                                         alt="Миниатюра {{ loop.index }}"
-                                         onclick="document.getElementById('main-product-image').src = this.src; document.querySelectorAll('.thumbnail').forEach(el => el.classList.remove('active')); this.classList.add('active');">
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                    {% if product.images|length > 1 %}
+                    <!-- Миниатюры, появляются только если фото больше одного -->
+                    <div class="d-flex gap-2 flex-wrap mt-3">
+                        {% for image in product.images|sort(attribute='order') %}
+                        <img src="{{ url_for('static', filename=image.image_path) }}"
+                             class="thumbnail {% if loop.first %}active{% endif %}"
+                             alt="Миниатюра {{ loop.index }}"
+                             onclick="document.getElementById('main-product-image').src = this.src; document.querySelectorAll('.thumbnail').forEach(el => el.classList.remove('active')); this.classList.add('active');">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                     {% else %}
-                        <!-- Заглушка, если нет изображений -->
-                        <img src="{{ url_for('static', filename='img/placeholder.png') }}"
-                             alt="Нет изображения"
-                             class="main-image">
+                    <!-- Заглушка, если нет изображений -->
+                    <img src="{{ url_for('static', filename='img/placeholder.png') }}"
+                         alt="Нет изображения"
+                         class="main-image">
                     {% endif %}
                 </div>
             </div>
@@ -47,11 +47,13 @@
 
                     <!-- Кнопки добавления в корзину и избранное -->
                     <div class="product-actions">
-                        <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post" hx-boost="false">
+                        <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post"
+                              hx-boost="false">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-outline">В корзину</button>
                         </form>
-                        <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}" method="post" hx-boost="false">
+                        <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}" method="post"
+                              hx-boost="false">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-outline">♡ В избранное</button>
                         </form>
@@ -59,6 +61,76 @@
 
                     <a href="{{ url_for('main.catalog') }}" class="btn-link mt-3 d-inline-block">← Назад в каталог</a>
                 </div>
+            </div>
+            <!-- Блок отзывов -->
+            <div class="reviews-section">
+                <h3>Отзывы</h3>
+                {% if reviews_count > 0 %}
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="average-rating">{{ '%.1f'|format(average_rating) }}</span>
+                    <span class="stars">★</span>
+                    <span class="text-muted">({{ reviews_count }})</span>
+                </div>
+                {% else %}
+                <p class="text-muted">Пока нет отзывов. Будьте первым!</p>
+                {% endif %}
+
+                <!-- Список одобренных отзывов -->
+                {% for review in reviews %}
+                <div class="review-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="review-author">{{ review.user.full_name or review.user.email }}</span>
+                        <span class="text-warning">
+                            {% for i in range(review.rating) %}★{% endfor %}
+                            {% for i in range(5 - review.rating) %}☆{% endfor %}
+                        </span>
+                    </div>
+                    <small class="text-muted">{{ review.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                    <div class="review-text">{{ review.text }}</div>
+                    {% if review.image_path %}
+                    <div class="mt-2">
+                        <img src="{{ url_for('static', filename=review.image_path) }}" alt="Фото отзыва"
+                             style="max-width: 200px; border-radius: 6px;">
+                    </div>
+                    {% endif %}
+
+                </div>
+                {% endfor %}
+
+                <!-- Форма отзыва для авторизованных -->
+                {% if current_user.is_authenticated %}
+                <div class="mt-4">
+                    <h4>Оставить отзыв</h4>
+                    <form method="POST" enctype="multipart/form-data"
+                          action="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.rating.label(class="form-label") }}
+                            {{ form.rating(class="form-select") }}
+                            {% for error in form.rating.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.text.label(class="form-label") }}
+                            {{ form.text(class="form-control", rows=4) }}
+                            {% for error in form.text.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.image.label(class="form-label") }}
+                            {{ form.image(class="form-control") }}
+                            {% for error in form.image.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-leather">Отправить отзыв</button>
+                    </form>
+                </div>
+                {% else %}
+                <p class="mt-3"><a href="{{ url_for('auth.login') }}">Войдите</a>, чтобы оставить отзыв.</p>
+                {% endif %}
             </div>
         </div>
     </div>

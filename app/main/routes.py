@@ -1,11 +1,12 @@
 from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort
 from flask_login import current_user
+from sqlalchemy import func
 
 from ..utils import save_image
 from . import main_bp
 from ..extensions import db
-from ..models import Product, Order, OrderItem, CartItem, CustomOrder
-from ..forms import CheckoutForm, CustomOrderForm
+from ..models import Product, Order, OrderItem, CartItem, CustomOrder, Review
+from ..forms import CheckoutForm, CustomOrderForm, ReviewForm
 
 
 @main_bp.context_processor
@@ -383,10 +384,43 @@ def custom_order():
     return render_template('custom_order.html', form=form)
 
 
-@main_bp.route('/product/<int:product_id>')
+@main_bp.route('/product/<int:product_id>', methods=['GET', 'POST'])
 def product_detail(product_id):
-    """Страница отдельного товара."""
     product = db.session.get(Product, product_id)
     if not product:
         abort(404)
-    return render_template('product_detail.html', product=product)
+
+    form = ReviewForm()
+    if current_user.is_authenticated and form.validate_on_submit():
+        # Проверяем, не оставлял ли уже отзыв этот пользователь для этого товара
+        existing_review = Review.query.filter_by(user_id=current_user.id, product_id=product.id).first()
+        if existing_review:
+            flash('Вы уже оставляли отзыв на этот товар.', 'warning')
+        else:
+            image_path = None
+            if form.image.data:
+                image_path = save_image(form.image.data)
+            review = Review(
+                user_id=current_user.id,
+                product_id=product.id,
+                rating=int(form.rating.data),
+                text=form.text.data,
+                is_approved=False,
+                image_path=image_path
+            )
+            db.session.add(review)
+            db.session.commit()
+            flash('Спасибо! Ваш отзыв отправлен на модерацию.', 'success')
+            return redirect(url_for('main.product_detail', product_id=product.id))
+
+    # Получаем одобренные отзывы
+    approved_reviews = Review.query.filter_by(product_id=product.id, is_approved=True).order_by(Review.created_at.desc()).all()
+    average_rating = db.session.query(func.avg(Review.rating)).filter_by(product_id=product.id, is_approved=True).scalar() or 0
+    reviews_count = len(approved_reviews)
+
+    return render_template('product_detail.html',
+                           product=product,
+                           form=form,
+                           reviews=approved_reviews,
+                           average_rating=average_rating,
+                           reviews_count=reviews_count)

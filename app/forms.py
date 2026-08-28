@@ -124,3 +124,10 @@ class ResetPasswordForm(FlaskForm):
         EqualTo('password', message='Пароли должны совпадать')
     ])
     submit = SubmitField('Сохранить')
+
+
+class ReviewForm(FlaskForm):
+    rating = SelectField('Оценка', choices=[(str(i), str(i)) for i in range(1, 6)], validators=[DataRequired()])
+    text = TextAreaField('Отзыв', validators=[DataRequired(), Length(max=1000)])
+    image = FileField('Фото', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')])
+    submit = SubmitField('Оставить отзыв')
