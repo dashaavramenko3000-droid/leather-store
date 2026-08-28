@@ -3,30 +3,29 @@
 {% block title %}Заказ #{{ order.id }}{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px;">
-    <h2>Заказ #{{ order.id }}</h2>
-    <p><strong>Дата:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
-    <hr>
+<h2>Заказ #{{ order.id }}</h2>
 
-    <h4>Информация о клиенте</h4>
-    <p><strong>Имя:</strong> {{ order.customer_name }}</p>
-    <p><strong>Email:</strong> {{ order.customer_email }}</p>
-    <p><strong>Телефон:</strong> {{ order.customer_phone }}</p>
-    <p><strong>Адрес доставки:</strong> {{ order.address or '—' }}</p>
-    <p><strong>Комментарий к заказу:</strong> {{ order.comment or '—' }}</p>
+<p><strong>Дата:</strong> {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+<p><strong>Клиент:</strong> {{ order.customer_name }}</p>
+<p><strong>Email:</strong> {{ order.customer_email }}</p>
+<p><strong>Телефон:</strong> {{ order.customer_phone }}</p>
+<p><strong>Адрес:</strong> {{ order.address or '—' }}</p>
+<p><strong>Сумма:</strong> {{ order.total_price }} ₽</p>
+<p><strong>Текущий статус:</strong> {{ order.status }}</p>
 
+<hr>
 
-    <h4>Состав заказа</h4>
-    <table class="table">
-        <thead>
+<h4>Состав заказа</h4>
+<table class="table">
+    <thead>
         <tr>
             <th>Товар</th>
             <th>Цена</th>
             <th>Кол-во</th>
             <th>Сумма</th>
         </tr>
-        </thead>
-        <tbody>
+    </thead>
+    <tbody>
         {% for item in order.items %}
         <tr>
             <td>{{ item.product_name }}</td>
@@ -35,12 +34,57 @@
             <td>{{ item.price * item.quantity }} ₽</td>
         </tr>
         {% endfor %}
-        </tbody>
-    </table>
-    <p><strong>Итого: {{ order.total_price }} ₽</strong></p>
+    </tbody>
+</table>
 
+<hr>
+
+<h4>Изменить статус</h4>
+<form method="POST" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <select name="status" class="form-control" style="max-width: 250px; display: inline-block; margin-right: 10px;">
+        <option value="new" {% if order.status == 'new' %}selected{% endif %}>Новый</option>
+        <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>В обработке</option>
+        <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Отправлен</option>
+        <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Выполнен</option>
+        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Отменён</option>
+    </select>
+    <button type="submit" class="btn">Сохранить статус</button>
+</form>
+
+<hr>
+
+<h4>История изменений статуса</h4>
+{% if order.status_history %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Статус</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in order.status_history %}
+        <tr>
+            <td>{{ entry.changed_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td>
+                {% if entry.status == 'new' %}Новый
+                {% elif entry.status == 'processing' %}В обработке
+                {% elif entry.status == 'shipped' %}Отправлен
+                {% elif entry.status == 'completed' %}Выполнен
+                {% elif entry.status == 'cancelled' %}Отменён
+                {% else %}{{ entry.status }}{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>История пуста.</p>
+{% endif %}
+
+<div class="btn-group" style="margin-top: 20px;">
     <a href="{{ url_for('admin.orders') }}" class="btn">Назад к списку</a>
-    <a href="{{ url_for('admin.delete_order', order_id=order.id) }}" class="btn"
-       style="background-color:#a94442; color:white;" onclick="return confirm('Удалить заказ?')">Удалить заказ</a>
+    <a href="{{ url_for('admin.delete_order', order_id=order.id) }}" class="btn btn-danger" onclick="return confirm('Удалить заказ?')">Удалить</a>
 </div>
 {% endblock %}

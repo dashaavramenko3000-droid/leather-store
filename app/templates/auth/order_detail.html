@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказ #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="order-detail-wrapper">
+    <div class="order-detail-card">
+        <div class="order-header">
+            <h2>Заказ #{{ order.id }}</h2>
+            <div class="order-meta">Оформлен: {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+        </div>
+
+        <div class="info-row">
+            <span class="info-label">Статус</span>
+            <span class="info-value">
+                <span class="status-badge status-{{ order.status }}">
+                    {% if order.status == 'new' %}Новый
+                    {% elif order.status == 'processing' %}В обработке
+                    {% elif order.status == 'shipped' %}Отправлен
+                    {% elif order.status == 'completed' %}Выполнен
+                    {% elif order.status == 'cancelled' %}Отменён
+                    {% else %}{{ order.status }}{% endif %}
+                </span>
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Имя</span>
+            <span class="info-value">{{ order.customer_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ order.customer_email }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Телефон</span>
+            <span class="info-value">{{ order.customer_phone }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Адрес</span>
+            <span class="info-value">{{ order.address or '—' }}</span>
+        </div>
+        {% if order.comment %}
+        <div class="info-row">
+            <span class="info-label">Комментарий</span>
+            <span class="info-value">{{ order.comment }}</span>
+        </div>
+        {% endif %}
+
+        <div class="order-items">
+            <h4>Состав заказа</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th>Цена</th>
+                        <th>Кол-во</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items %}
+                    <tr>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.price }} ₽</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price * item.quantity }} ₽</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="total-block">Итого: {{ order.total_price }} ₽</div>
+        </div>
+
+        <a href="{{ url_for('auth.orders') }}" class="btn-back">← Назад к списку заказов</a>
+    </div>
+</div>
+{% endblock %}

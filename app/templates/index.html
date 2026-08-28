@@ -8,7 +8,7 @@
     <div class="container">
         <h1>Изделия из кожи<br>с ручным тиснением</h1>
         <p>Создаём уникальные аксессуары, которые хранят тепло рук мастера</p>
-        <a href="#catalog" class="btn">Смотреть каталог</a>
+        <a href="{{ url_for('main.catalog') }}" class="btn btn-hero">Наши изделия</a>
     </div>
 </section>
 
@@ -42,24 +42,39 @@
                     <div class="slide">
                         <div class="product-card">
                             <div class="product-image">
-                                {% set main_image = product.images|sort(attribute='order')|first %}
-                                {% if main_image %}
-                                <img src="{{ url_for('static', filename=main_image.image_path) }}"
-                                     alt="{{ product.name }}">
-                                {% else %}
-                                <img src="{{ url_for('static', filename='img/placeholder.png') }}"
-                                     alt="Нет изображения">
-                                {% endif %}
+                                <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">
+                                    {% set main_image = product.images|sort(attribute='order')|first %}
+                                    {% if main_image %}
+                                    <img src="{{ url_for('static', filename=main_image.image_path) }}"
+                                         alt="{{ product.name }}">
+                                    {% else %}
+                                    <img src="{{ url_for('static', filename='img/placeholder.png') }}"
+                                         alt="Нет изображения">
+                                    {% endif %}
+                                </a>
                             </div>
                             <div class="product-info">
-                                <h3>{{ product.name }}</h3>
+                                <h3><a href="{{ url_for('main.product_detail', product_id=product.id) }}"
+                                       hx-boost="false">{{
+                                    product.name }}</a></h3>
                                 <span class="product-type">{{ product.product_type }}</span>
                                 <p>{{ product.description }}</p>
-                                <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post"
-                                      hx-boost="false">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-outline">В корзину</button>
-                                </form>
+                                <div class="product-actions">
+                                    <!-- Кнопка "В корзину" -->
+                                    <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}"
+                                          method="post" hx-boost="false">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-outline">В корзину</button>
+                                    </form>
+
+                                    <!-- Кнопка "В избранное" -->
+                                    <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}"
+                                          method="post" hx-boost="false">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-outline">♡</button>
+                                    </form>
+                                </div>
+
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Индивидуальный заказ{% endblock %}
+
+{% block content %}
+<div class="custom-order-page py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card custom-order-card">
+                    <div class="custom-order-header">
+                        <h1>Индивидуальный заказ</h1>
+                        <p>Расскажите нам о своей идее, и мы воплотим её в коже</p>
+                    </div>
+                    <div class="card-body custom-order-body">
+                        <!-- Важно: enctype для загрузки файла -->
+                        <form method="POST" enctype="multipart/form-data" hx-boost="false">
+                            {{ form.hidden_tag() }}
+
+                            <!-- Имя -->
+                            <div class="mb-4">
+                                {{ form.name.label(class="form-label") }}
+                                {{ form.name(class="form-control", placeholder="Как к вам обращаться?") }}
+                                {% for error in form.name.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Контакт -->
+                            <div class="mb-4">
+                                {{ form.contact.label(class="form-label") }}
+                                {{ form.contact(class="form-control", placeholder="Email или телефон") }}
+                                {% for error in form.contact.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Тип изделия -->
+                            <div class="mb-4">
+                                {{ form.product_type.label(class="form-label") }}
+                                {{ form.product_type(class="form-select") }}
+                                {% for error in form.product_type.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Описание -->
+                            <div class="mb-4">
+                                {{ form.description.label(class="form-label") }}
+                                {{ form.description(class="form-control", rows=5, placeholder="Опишите изделие, которое хотите заказать: размер, цвет, тиснение, особенности...") }}
+                                {% for error in form.description.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Загрузка фото -->
+                            <div class="mb-4">
+                                {{ form.image.label(class="form-label") }}
+                                {{ form.image(class="form-control") }}
+                                {% for error in form.image.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                                <small class="text-muted">Можно загрузить фото изделия (до 20 МБ)</small>
+                            </div>
+
+                            <button type="submit" class="btn btn-leather w-100">Отправить заявку</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

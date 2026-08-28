@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<div class="container profile-edit-wrapper">
+    <div class="profile-edit-card">
+        <h2>Редактирование профиля</h2>
+        <form method="POST" hx-boost="false">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.full_name.label(class="form-label") }}
+                {{ form.full_name(class="form-control", placeholder="Ваше имя") }}
+            </div>
+            <div class="mb-3">
+                {{ form.phone.label(class="form-label") }}
+                {{ form.phone(class="form-control", placeholder="Телефон") }}
+            </div>
+            <div class="mb-3">
+                {{ form.address.label(class="form-label") }}
+                {{ form.address(class="form-control", rows=3, placeholder="Адрес") }}
+            </div>
+            <button type="submit" class="btn btn-leather">Сохранить изменения</button>
+        </form>
+        <a href="{{ url_for('auth.account') }}" class="btn-back">← Назад в личный кабинет</a>
+    </div>
+</div>
+{% endblock %}

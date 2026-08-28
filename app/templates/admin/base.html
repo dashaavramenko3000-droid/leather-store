@@ -4,52 +4,227 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Админ-панель{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Montserrat:wght@300;400;500&display=swap"
+
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Montserrat:wght@300;400;500;600&display=swap"
           rel="stylesheet">
+    <!-- Общие стили сайта -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
     <style>
-        /* Дополнительные стили для админки */
-        .admin-header {
-            background-color: #2c1e14;
-            color: #f9f2e7;
-            padding: 15px 0;
+        /* ========================
+           Переменные цветовой палитры
+           ======================== */
+        :root {
+            --brown-dark: #2c1e14; /* Тёмный коричневый (шапка) */
+            --brown-medium: #5a3e2b; /* Средний коричневый (таблицы) */
+            --brown-light: #8b6b4a; /* Светло-коричневый (hover) */
+            --beige: #e8d5b7; /* Бежевый (фон) */
+            --cream: #f9f2e7; /* Кремовый (текст на тёмном) */
+            --accent: #c19a6b; /* Акцентный (кнопки, ссылки) */
+            --text: #3b2a1a; /* Основной тёмный текст */
         }
 
-        .admin-nav {
+        /* ========================
+           Базовые сбросы и общие стили
+           ======================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f5f0e8; /* светлый бежевый фон */
+            color: var(--text);
             display: flex;
-            gap: 20px;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
+        /* ========================
+           Шапка админ-панели
+           ======================== */
+        .admin-header {
+            background-color: var(--brown-dark);
+            color: var(--cream);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-header .logo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--beige);
+        }
+
+        /* Навигация админки */
         .admin-nav ul {
             display: flex;
             list-style: none;
             gap: 20px;
+            align-items: center;
         }
 
         .admin-nav a {
-            color: #f9f2e7;
+            color: var(--cream);
             text-decoration: none;
             font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        .admin-nav a:hover {
-            color: #c19a6b;
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background-color: var(--accent);
+            color: var(--brown-dark);
         }
 
+        /* ========================
+           Основной контент
+           ======================== */
         .admin-content {
+            flex: 1;
             padding: 40px 20px;
         }
 
+        /* Карточка контента */
+        .admin-content .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--brown-dark);
+            margin-bottom: 25px;
+            font-size: 2rem;
+        }
+
+        /* ========================
+           Таблицы
+           ======================== */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .table th,
+        .table td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .table thead {
+            background-color: var(--brown-medium);
+            color: var(--cream);
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .table tbody tr:hover {
+            background-color: #faf5ec;
+        }
+
+        .table img.product-thumb {
+            width: 60px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        /* ========================
+           Кнопки (единый стиль)
+           ======================== */
+        .admin-content .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            white-space: nowrap; /* не переносить текст */
+            margin: 0;
+            border: none;
+            text-decoration: none;
+            font-weight: 600;
+            background-color: var(--accent);
+            color: var(--brown-dark);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .admin-content .btn:hover {
+            background-color: var(--brown-light);
+            color: #fff;
+        }
+
+        /* Маленькие кнопки (в таблицах) */
+        .admin-content .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        /* Красная кнопка удаления */
+        .admin-content .btn-danger {
+            background-color: #a94442;
+            color: #fff;
+        }
+
+        .admin-content .btn-danger:hover {
+            background-color: #843534;
+        }
+
+        /* Группа кнопок с отступами */
+        .btn-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group .btn {
+            flex: 1 1 auto;
+            min-width: 100px;
+        }
+
+        /* ========================
+           Сообщения (flash)
+           ======================== */
         .flash-messages {
             margin-bottom: 20px;
         }
 
         .flash {
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border-radius: 5px;
             margin-bottom: 10px;
+            font-weight: 500;
         }
 
         .flash.success {
@@ -67,48 +242,114 @@
             color: #0c5460;
         }
 
-        .btn-sm {
-            padding: 5px 10px;
+        /* ========================
+           Адаптивность
+           ======================== */
+        @media (max-width: 768px) {
+            .admin-header .container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .admin-nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .admin-content .container {
+                padding: 20px;
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
             font-size: 0.8rem;
+            font-weight: 600;
         }
 
-        .table {
+        .badge-new {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-in_progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* ========================
+   Поля ввода и селекты
+   ======================== */
+        .admin-content .form-control,
+        .admin-content .form-select,
+        .admin-content input[type="text"],
+        .admin-content input[type="number"],
+        .admin-content input[type="email"],
+        .admin-content input[type="password"],
+        .admin-content textarea {
+            border: 1px solid #ccc;
+            border-radius: 8px; /* скругление углов */
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background-color: #fff;
+            transition: border-color 0.3s, box-shadow 0.3s;
             width: 100%;
-            border-collapse: collapse;
-            background: white;
+            max-width: 100%;
         }
 
-        .table th, .table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
+        .admin-content .form-control:focus,
+        .admin-content .form-select:focus,
+        .admin-content input:focus,
+        .admin-content textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 5px rgba(193, 154, 107, 0.5);
+            outline: none;
         }
 
-        .table th {
-            background-color: #5a3e2b;
-            color: white;
+        /* Для селектов добавляем стрелку */
+        .admin-content .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a3e2b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 30px;
         }
 
-        .product-thumb {
-            width: 80px;
-            height: 60px;
-            object-fit: cover;
+        /* Текстовые области */
+        .admin-content textarea {
+            resize: vertical;
         }
     </style>
 </head>
 <body>
 {% if current_user.is_authenticated %}
 <header class="admin-header">
-    <div class="container admin-nav">
-        <div>
-            <strong>Кожаная мастерская — Админ</strong>
+    <div class="container">
+        <div class="logo">
+            <h1>Кожаная мастерская — Админ</h1>
         </div>
-        <ul>
-            <li><a href="{{ url_for('admin.dashboard') }}">Панель</a></li>
-            <li><a href="{{ url_for('admin.products') }}">Товары</a></li>
-            <li><a href="{{ url_for('admin.orders') }}">Заказы</a></li>
-            <li><a href="{{ url_for('admin.logout') }}">Выйти</a></li>
-        </ul>
+        <nav class="admin-nav">
+            <ul>
+                <li><a href="{{ url_for('admin.dashboard') }}">Панель</a></li>
+                <li><a href="{{ url_for('admin.products') }}">Товары</a></li>
+                <li><a href="{{ url_for('admin.orders') }}">Заказы</a></li>
+                <li><a href="{{ url_for('admin.custom_orders') }}">Заявки</a></li>
+                <li><a href="{{ url_for('admin.logout') }}">Выйти</a></li>
+            </ul>
+        </nav>
     </div>
 </header>
 {% endif %}

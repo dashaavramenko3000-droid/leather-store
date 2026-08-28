@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container profile-wrapper">
+    <div class="row g-4">
+        <!-- Боковое меню -->
+        <div class="col-lg-3">
+            <div class="profile-sidebar">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h4>{{ current_user.full_name or 'Пользователь' }}</h4>
+                <p>{{ current_user.email }}</p>
+                <ul class="nav flex-column nav-pills">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('auth.account') }}"><i class="fas fa-home me-2"></i>Обзор</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.orders') }}"><i class="fas fa-shopping-bag me-2"></i>Мои
+                            заказы</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.wishlist') }}"><i class="fas fa-heart me-2"></i>Избранное</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.profile') }}"><i class="fas fa-pencil-alt me-2"></i>Редактировать</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="col-lg-9">
+            <div class="profile-main">
+                <h3>Обзор профиля</h3>
+                <div class="profile-info-grid">
+                    <div class="profile-info-item">
+                        <label>Имя</label>
+                        <span class="value">{{ current_user.full_name or 'Не указано' }}</span>
+                    </div>
+                    <div class="profile-info-item">
+                        <label>Email</label>
+                        <span class="value">{{ current_user.email }}</span>
+                    </div>
+                    <div class="profile-info-item">
+                        <label>Телефон</label>
+                        <span class="value">{{ current_user.phone or 'Не указан' }}</span>
+                    </div>
+                    <div class="profile-info-item">
+                        <label>Адрес</label>
+                        <span class="value">{{ current_user.address or 'Не указан' }}</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

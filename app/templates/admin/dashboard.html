@@ -4,6 +4,27 @@
 
 {% block content %}
 <h2>Панель управления</h2>
-<p>Всего товаров: <strong>{{ product_count }}</strong></p>
-<a href="{{ url_for('admin.products') }}" class="btn">Управление товарами</a>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+    <!-- Товары -->
+    <div class="stat-card">
+        <h3>Товары</h3>
+        <p>{{ product_count }}</p>
+    </div>
+    <!-- Всего заказов -->
+    <div class="stat-card">
+        <h3>Заказы</h3>
+        <p>{{ order_count }}</p>
+    </div>
+    <!-- Индивидуальные заявки -->
+    <div class="stat-card">
+        <h3>Заявки</h3>
+        <p>{{ custom_orders_count }}</p>
+    </div>
+    <!-- Выполненные заказы всех типов -->
+    <div class="stat-card">
+        <h3>Выполнено заказов</h3>
+        <p>{{ completed_orders_total }}</p>
+    </div>
+</div>
 {% endblock %}

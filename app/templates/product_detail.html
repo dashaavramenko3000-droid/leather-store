@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} — Кожаная мастерская «Тиснение»{% endblock %}
+
+{% block content %}
+<div class="product-detail-page">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Левая колонка: галерея -->
+            <div class="col-lg-6">
+                <div class="product-gallery">
+                    {% if product.images %}
+                        {% set main_image = product.images|sort(attribute='order')|first %}
+                        <!-- Главное изображение -->
+                        <img src="{{ url_for('static', filename=main_image.image_path) }}"
+                             alt="{{ product.name }}"
+                             class="main-image"
+                             id="main-product-image">
+
+                        {% if product.images|length > 1 %}
+                            <!-- Миниатюры, появляются только если фото больше одного -->
+                            <div class="d-flex gap-2 flex-wrap mt-3">
+                                {% for image in product.images|sort(attribute='order') %}
+                                    <img src="{{ url_for('static', filename=image.image_path) }}"
+                                         class="thumbnail {% if loop.first %}active{% endif %}"
+                                         alt="Миниатюра {{ loop.index }}"
+                                         onclick="document.getElementById('main-product-image').src = this.src; document.querySelectorAll('.thumbnail').forEach(el => el.classList.remove('active')); this.classList.add('active');">
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <!-- Заглушка, если нет изображений -->
+                        <img src="{{ url_for('static', filename='img/placeholder.png') }}"
+                             alt="Нет изображения"
+                             class="main-image">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Правая колонка: информация -->
+            <div class="col-lg-6">
+                <div class="product-info">
+                    <h1 class="product-title">{{ product.name }}</h1>
+                    <span class="product-type">{{ product.product_type }}</span>
+                    <div class="product-price">{{ product.price }} ₽</div>
+                    <div class="product-description">{{ product.description }}</div>
+
+                    <!-- Кнопки добавления в корзину и избранное -->
+                    <div class="product-actions">
+                        <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post" hx-boost="false">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline">В корзину</button>
+                        </form>
+                        <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}" method="post" hx-boost="false">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline">♡ В избранное</button>
+                        </form>
+                    </div>
+
+                    <a href="{{ url_for('main.catalog') }}" class="btn-link mt-3 d-inline-block">← Назад в каталог</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
