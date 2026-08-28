@@ -1,99 +1,5 @@
 {% extends 'base.html' %}
 
-{% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-    .profile-wrapper {
-        padding: 40px 0;
-    }
-    .profile-sidebar {
-        background: var(--white);
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        padding: 25px;
-        text-align: center;
-    }
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: var(--beige);
-        margin: 0 auto 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3rem;
-        color: var(--brown-medium);
-    }
-    .profile-sidebar h4 {
-        font-family: 'Playfair Display', serif;
-        color: var(--brown-dark);
-        margin-bottom: 5px;
-    }
-    .profile-sidebar p {
-        color: #777;
-        font-size: 0.9rem;
-        margin-bottom: 20px;
-    }
-    .nav-pills .nav-link {
-        color: var(--brown-medium);
-        font-weight: 500;
-        border-radius: 6px;
-        padding: 10px 15px;
-        transition: background-color 0.2s;
-    }
-    .nav-pills .nav-link:hover {
-        background-color: var(--beige);
-    }
-    .nav-pills .nav-link.active {
-        background-color: var(--accent);
-        color: var(--brown-dark);
-    }
-
-    .profile-main {
-        background: var(--white);
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        padding: 25px;
-    }
-    .profile-main h3 {
-        font-family: 'Playfair Display', serif;
-        color: var(--brown-dark);
-        margin-bottom: 20px;
-    }
-    .profile-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-    }
-    .profile-info-item {
-        background: #faf6ef;
-        border-radius: 8px;
-        padding: 15px;
-    }
-    .profile-info-item label {
-        display: block;
-        font-size: 0.8rem;
-        color: var(--brown-light);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 5px;
-    }
-    .profile-info-item .value {
-        font-weight: 600;
-        color: var(--brown-dark);
-    }
-    @media (max-width: 768px) {
-        .profile-info-grid {
-            grid-template-columns: 1fr;
-        }
-        .profile-sidebar {
-            margin-bottom: 20px;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block title %}Личный кабинет{% endblock %}
 
 {% block content %}
@@ -112,7 +18,8 @@
                         <a class="nav-link active" href="{{ url_for('auth.account') }}"><i class="fas fa-home me-2"></i>Обзор</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.orders') }}"><i class="fas fa-shopping-bag me-2"></i>Мои заказы</a>
+                        <a class="nav-link" href="{{ url_for('auth.orders') }}"><i class="fas fa-shopping-bag me-2"></i>Мои
+                            заказы</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.wishlist') }}"><i class="fas fa-heart me-2"></i>Избранное</a>
