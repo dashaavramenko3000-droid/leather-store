@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from flask import render_template, redirect, url_for, flash, request, abort, session
 from flask_login import login_user, logout_user, login_required, current_user
 
-from email_utils import send_email
+from ..email_utils import send_email
 from . import auth_bp
 from ..extensions import db
 from ..models import User, Order, WishlistItem, Product, CartItem, CustomOrder, OrderMessage, CustomOrderMessage

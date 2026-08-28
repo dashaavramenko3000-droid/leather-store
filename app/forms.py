@@ -131,3 +131,15 @@ class ReviewForm(FlaskForm):
     text = TextAreaField('Отзыв', validators=[DataRequired(), Length(max=1000)])
     image = FileField('Фото', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')])
     submit = SubmitField('Оставить отзыв')
+
+
+class EmailSettingsForm(FlaskForm):
+    mail_server = StringField('SMTP сервер', validators=[DataRequired()])
+    mail_port = IntegerField('Порт', validators=[DataRequired()])
+    mail_use_ssl = BooleanField('Использовать SSL')
+    mail_use_tls = BooleanField('Использовать TLS')
+    mail_username = StringField('Логин')
+    mail_password = PasswordField('Пароль')
+    mail_default_sender = StringField('Email отправителя')
+    admin_email = StringField('Email администратора (для уведомлений)')
+    submit = SubmitField('Сохранить')

@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
 from functools import wraps
-from flask import render_template, redirect, url_for, flash, request, abort
+from flask import render_template, redirect, url_for, flash, request, abort, current_app
 from flask_login import login_user, logout_user, current_user
 
-from email_utils import send_email
+from app import mail
+from ..email_utils import send_email
 from . import admin_bp
-from ..forms import LoginForm, ProductForm
+from ..forms import LoginForm, ProductForm, EmailSettingsForm
 from ..utils import save_image, delete_image_file
 from ..models import db, Product, ProductImage, User, Order, CustomOrder, OrderStatusHistory, CustomOrderStatusHistory, \
-    OrderMessage, CustomOrderMessage, Review
+    OrderMessage, CustomOrderMessage, Review, EmailSettings
 
 
 def admin_required(f):
@@ -384,3 +385,43 @@ def delete_review(review_id):
     db.session.commit()
     flash('Отзыв удалён', 'success')
     return redirect(url_for('admin.reviews'))
+
+
+@admin_bp.route('/email-settings', methods=['GET', 'POST'])
+@admin_required
+def email_settings():
+    settings = db.session.get(EmailSettings, 1)
+    if not settings:
+        settings = EmailSettings(id=1)
+        db.session.add(settings)
+        db.session.commit()
+
+    form = EmailSettingsForm(obj=settings)
+    if form.validate_on_submit():
+        settings.mail_server = form.mail_server.data
+        settings.mail_port = form.mail_port.data
+        settings.mail_use_ssl = form.mail_use_ssl.data
+        settings.mail_use_tls = form.mail_use_tls.data
+        settings.mail_username = form.mail_username.data
+        settings.mail_password = form.mail_password.data
+        settings.mail_default_sender = form.mail_default_sender.data
+        settings.admin_email = form.admin_email.data
+        db.session.commit()
+
+        # Применяем настройки к текущему приложению
+        current_app.config.update(
+            MAIL_SERVER=settings.mail_server,
+            MAIL_PORT=settings.mail_port,
+            MAIL_USE_SSL=settings.mail_use_ssl,
+            MAIL_USE_TLS=settings.mail_use_tls,
+            MAIL_USERNAME=settings.mail_username,
+            MAIL_PASSWORD=settings.mail_password,
+            MAIL_DEFAULT_SENDER=settings.mail_default_sender,
+            ADMIN_EMAIL=settings.admin_email
+        )
+        # Переинициализируем mail, чтобы применились новые параметры
+        mail.init_app(current_app)
+        flash('Настройки почты сохранены', 'success')
+        return redirect(url_for('admin.email_settings'))
+
+    return render_template('admin/email_settings.html', form=form)

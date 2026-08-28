@@ -202,3 +202,19 @@ class Review(db.Model):
 
     def __repr__(self):
         return f'<Review {self.id} - {self.rating}>'
+
+
+class EmailSettings(db.Model):
+    """Настройки электронной почты (singleton, id=1)."""
+    id = db.Column(db.Integer, primary_key=True, default=1)
+    mail_server = db.Column(db.String(100), nullable=False, default='smtp.yandex.ru')
+    mail_port = db.Column(db.Integer, nullable=False, default=465)
+    mail_use_ssl = db.Column(db.Boolean, default=True)
+    mail_use_tls = db.Column(db.Boolean, default=False)
+    mail_username = db.Column(db.String(100))
+    mail_password = db.Column(db.String(200))
+    mail_default_sender = db.Column(db.String(100))
+    admin_email = db.Column(db.String(100))
+
+    def __repr__(self):
+        return '<EmailSettings>'

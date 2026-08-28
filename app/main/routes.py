@@ -2,7 +2,7 @@ from flask import render_template, request, session, redirect, url_for, flash, j
 from flask_login import current_user
 from sqlalchemy import func
 
-from email_utils import send_email
+from ..email_utils import send_email
 from ..utils import save_image
 from . import main_bp
 from ..extensions import db
