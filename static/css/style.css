@@ -169,7 +169,7 @@ img {
 
 .btn-outline-primary {
     border-color: var(--accent);
-    color: var(--accent);
+    color: var(--accent) !important;
 }
 
 .btn-outline-primary:hover {
@@ -1581,4 +1581,116 @@ textarea:focus {
     .table-responsive {
         overflow-x: auto;
     }
+}
+
+.chat-message {
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.chat-message.admin {
+    justify-content: flex-start;
+}
+
+.chat-message.customer {
+    justify-content: flex-end;
+}
+
+.chat-bubble {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    background: #f1ede8;
+    position: relative;
+}
+
+.chat-message.admin .chat-bubble {
+    background: #e8d5b7;
+}
+
+.chat-message.customer .chat-bubble {
+    background: #d1ecf1;
+}
+
+.chat-text {
+    color: var(--brown-dark);
+}
+
+.chat-meta {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 5px;
+    text-align: right;
+}
+
+/* ========================
+   Чат внутри заказа/заявки
+   ======================== */
+.chat-block {
+    margin-top: 30px;
+}
+
+.chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #faf6ef;
+    border-radius: 8px;
+}
+
+.chat-message {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.chat-message.customer {
+    justify-content: flex-end;
+}
+
+.chat-message.admin {
+    justify-content: flex-start;
+}
+
+.chat-bubble {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    background: #f1ede8;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.chat-message.customer .chat-bubble {
+    background: #d1ecf1;
+}
+
+.chat-message.admin .chat-bubble {
+    background: #e8d5b7;
+}
+
+.chat-text {
+    color: var(--brown-dark);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.chat-meta {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.chat-form textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.chat-form .btn {
+    /* используем существующий класс .btn из style.css */
 }

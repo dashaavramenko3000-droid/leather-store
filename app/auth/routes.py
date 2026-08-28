@@ -12,13 +12,14 @@ from flask_login import login_user, logout_user, login_required, current_user
 
 from . import auth_bp
 from ..extensions import db
-from ..models import User, Order, WishlistItem, Product, CartItem, CustomOrder
+from ..models import User, Order, WishlistItem, Product, CartItem, CustomOrder, OrderMessage, CustomOrderMessage
 from ..forms import (
     CustomerLoginForm,
     RegistrationForm,
     UpdateProfileForm,
     ResetPasswordRequestForm,
     ResetPasswordForm,
+
 )
 
 
@@ -140,25 +141,50 @@ def orders():
         custom_orders=custom_orders
     )
 
-@auth_bp.route('/account/custom-order/<int:order_id>')
+
+@auth_bp.route('/account/custom-order/<int:order_id>', methods=['GET', 'POST'])
 @login_required
 def custom_order_detail(order_id):
     custom_order = db.session.get(CustomOrder, order_id)
     if not custom_order or custom_order.user_id != current_user.id:
         abort(404)
+
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            msg = CustomOrderMessage(
+                custom_order_id=custom_order.id,
+                sender_type='customer',
+                message=message
+            )
+            db.session.add(msg)
+            db.session.commit()
+            flash('Сообщение отправлено', 'success')
+            return redirect(url_for('auth.custom_order_detail', order_id=custom_order.id))
+
     return render_template('auth/custom_order_detail.html', custom_order=custom_order)
 
 
-@auth_bp.route('/account/orders/<int:order_id>')
+@auth_bp.route('/account/orders/<int:order_id>', methods=['GET', 'POST'])
 @login_required
 def order_detail(order_id):
-    """Просмотр конкретного заказа пользователя."""
     order = db.session.get(Order, order_id)
-    if not order:
+    if not order or order.user_id != current_user.id:
         abort(404)
-    # Доступ разрешён только владельцу или администратору
-    if order.user_id != current_user.id and not current_user.is_admin:
-        abort(403)
+
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            msg = OrderMessage(
+                order_id=order.id,
+                sender_type='customer',
+                message=message
+            )
+            db.session.add(msg)
+            db.session.commit()
+            flash('Сообщение отправлено', 'success')
+            return redirect(url_for('auth.order_detail', order_id=order.id))
+
     return render_template('auth/order_detail.html', order=order)
 
 

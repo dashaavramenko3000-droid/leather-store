@@ -34,10 +34,14 @@
 <form method="POST" action="{{ url_for('admin.update_custom_order_status', order_id=custom_order.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <select name="status" class="form-control" style="max-width: 250px; display: inline-block; margin-right: 10px;">
-        <option value="new" {% if custom_order.status == 'new' %}selected{% endif %}>Новая</option>
-        <option value="in_progress" {% if custom_order.status == 'in_progress' %}selected{% endif %}>В работе</option>
-        <option value="completed" {% if custom_order.status == 'completed' %}selected{% endif %}>Выполнена</option>
-        <option value="cancelled" {% if custom_order.status == 'cancelled' %}selected{% endif %}>Отменена</option>
+        <option value="new" {% if custom_order.status==
+        'new' %}selected{% endif %}>Новая</option>
+        <option value="in_progress" {% if custom_order.status==
+        'in_progress' %}selected{% endif %}>В работе</option>
+        <option value="completed" {% if custom_order.status==
+        'completed' %}selected{% endif %}>Выполнена</option>
+        <option value="cancelled" {% if custom_order.status==
+        'cancelled' %}selected{% endif %}>Отменена</option>
     </select>
     <button type="submit" class="btn">Сохранить статус</button>
 </form>
@@ -49,29 +53,56 @@
 {% if custom_order.status_history %}
 <table class="table">
     <thead>
-        <tr>
-            <th>Дата</th>
-            <th>Статус</th>
-        </tr>
+    <tr>
+        <th>Дата</th>
+        <th>Статус</th>
+    </tr>
     </thead>
     <tbody>
-        {% for entry in custom_order.status_history %}
-        <tr>
-            <td>{{ entry.changed_at.strftime('%d.%m.%Y %H:%M') }}</td>
-            <td>
-                {% if entry.status == 'new' %}Новая
-                {% elif entry.status == 'in_progress' %}В работе
-                {% elif entry.status == 'completed' %}Выполнена
-                {% elif entry.status == 'cancelled' %}Отменена
-                {% else %}{{ entry.status }}{% endif %}
-            </td>
-        </tr>
-        {% endfor %}
+    {% for entry in custom_order.status_history %}
+    <tr>
+        <td>{{ entry.changed_at.strftime('%d.%m.%Y %H:%M') }}</td>
+        <td>
+            {% if entry.status == 'new' %}Новая
+            {% elif entry.status == 'in_progress' %}В работе
+            {% elif entry.status == 'completed' %}Выполнена
+            {% elif entry.status == 'cancelled' %}Отменена
+            {% else %}{{ entry.status }}{% endif %}
+        </td>
+    </tr>
+    {% endfor %}
     </tbody>
 </table>
 {% else %}
 <p>История пуста.</p>
 {% endif %}
+
+<hr>
+
+<!-- Чат -->
+<div class="chat-block">
+    <h4>Переписка по заявке</h4>
+    <div class="chat-messages">
+        {% for msg in custom_order.messages|sort(attribute='created_at') %}
+        <div class="chat-message {{ 'admin' if msg.sender_type == 'admin' else 'customer' }}">
+            <div class="chat-bubble">
+                <div class="chat-text">{{ msg.message }}</div>
+                <div class="chat-meta">
+                    {{ msg.created_at.strftime('%d.%m.%Y %H:%M') }} ·
+                    {% if msg.sender_type == 'admin' %}Вы{% else %}Клиент{% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-muted">Сообщений пока нет.</p>
+        {% endfor %}
+    </div>
+    <form method="POST" class="chat-form" action="{{ url_for('admin.custom_order_detail', order_id=custom_order.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <textarea name="message" rows="3" placeholder="Введите сообщение..." required></textarea>
+        <button type="submit" class="btn">Отправить</button>
+    </form>
+</div>
 
 <!-- Кнопки навигации и действия -->
 <div class="btn-group" style="margin-top: 20px;">
@@ -103,20 +134,24 @@
         align-items: center;
         cursor: zoom-out;
     }
+
     .modal-overlay.show {
         display: flex;
     }
+
     .modal-content {
         position: relative;
         max-width: 90%;
         max-height: 90%;
         cursor: auto;
     }
+
     .modal-content img {
         max-width: 100%;
         max-height: 90vh;
         border-radius: 5px;
     }
+
     .modal-close {
         position: absolute;
         top: -30px;
@@ -125,22 +160,85 @@
         color: #fff;
         cursor: pointer;
     }
+
+    /* Стили чата */
+    .chat-block {
+        margin-top: 30px;
+    }
+
+    .chat-messages {
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #faf6ef;
+        border-radius: 8px;
+    }
+
+    .chat-message {
+        display: flex;
+        margin-bottom: 10px;
+    }
+
+    .chat-message.customer {
+        justify-content: flex-end;
+    }
+
+    .chat-message.admin {
+        justify-content: flex-start;
+    }
+
+    .chat-bubble {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 15px;
+        background: #f1ede8;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .chat-message.customer .chat-bubble {
+        background: #d1ecf1;
+    }
+
+    .chat-message.admin .chat-bubble {
+        background: #e8d5b7;
+    }
+
+    .chat-text {
+        color: var(--brown-dark);
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .chat-meta {
+        font-size: 0.75rem;
+        color: #888;
+        margin-top: 5px;
+        text-align: right;
+    }
+
+    .chat-form textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-family: inherit;
+        resize: vertical;
+        margin-bottom: 10px;
+    }
 </style>
 
 <script>
-    // Открытие модального окна
     function openModal(src) {
         document.getElementById('modalImage').src = src;
         document.getElementById('photoModal').classList.add('show');
     }
 
-    // Закрытие модального окна
     function closeModal() {
         document.getElementById('photoModal').classList.remove('show');
     }
 
-    // Дополнительно: закрытие по клавише Esc
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') closeModal();
     });
 </script>

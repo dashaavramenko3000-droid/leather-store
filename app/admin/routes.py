@@ -5,7 +5,7 @@ from flask_login import login_user, logout_user, current_user
 from . import admin_bp
 from ..forms import LoginForm, ProductForm
 from ..utils import save_image, delete_image_file
-from ..models import db, Product, ProductImage, User, Order, CustomOrder, OrderStatusHistory, CustomOrderStatusHistory
+from ..models import db, Product, ProductImage, User, Order, CustomOrder, OrderStatusHistory, CustomOrderStatusHistory, OrderMessage, CustomOrderMessage
 
 
 def admin_required(f):
@@ -187,12 +187,26 @@ def orders():
                            filter_date=filter_date)
 
 
-@admin_bp.route('/orders/<int:order_id>')
+@admin_bp.route('/orders/<int:order_id>', methods=['GET', 'POST'])
 @admin_required
 def order_detail(order_id):
     order = db.session.get(Order, order_id)
     if not order:
         abort(404)
+
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            msg = OrderMessage(
+                order_id=order.id,
+                sender_type='admin',
+                message=message
+            )
+            db.session.add(msg)
+            db.session.commit()
+            flash('Сообщение отправлено', 'success')
+            return redirect(url_for('admin.order_detail', order_id=order.id))
+
     return render_template('admin/order_detail.html', order=order)
 
 
@@ -237,13 +251,26 @@ def custom_orders():
                            filter_date=filter_date)
 
 
-@admin_bp.route('/custom-orders/<int:order_id>')
+@admin_bp.route('/custom-orders/<int:order_id>', methods=['GET', 'POST'])
 @admin_required
 def custom_order_detail(order_id):
-    """Просмотр деталей индивидуального заказа."""
     custom_order = db.session.get(CustomOrder, order_id)
     if not custom_order:
         abort(404)
+
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            msg = CustomOrderMessage(
+                custom_order_id=custom_order.id,
+                sender_type='admin',
+                message=message
+            )
+            db.session.add(msg)
+            db.session.commit()
+            flash('Сообщение отправлено', 'success')
+            return redirect(url_for('admin.custom_order_detail', order_id=custom_order.id))
+
     return render_template('admin/custom_order_detail.html', custom_order=custom_order)
 
 

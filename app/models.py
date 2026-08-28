@@ -14,6 +14,7 @@ class User(UserMixin, db.Model):
     address = db.Column(db.String(200))
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
     orders = db.relationship('Order', backref='customer', lazy=True)
     wishlist_items = db.relationship('WishlistItem', backref='user', lazy=True, cascade='all, delete-orphan')
     reset_token = db.Column(db.String(100), unique=True, nullable=True)
@@ -35,6 +36,7 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Integer, nullable=False)
     product_type = db.Column(db.String(50), nullable=False, default='Кошелёк')
+
     images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan',
                              order_by='ProductImage.order')
 
@@ -63,9 +65,12 @@ class Order(db.Model):
     status = db.Column(db.String(20), default='new')  # new, processing, shipped, completed, cancelled
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     total_price = db.Column(db.Integer, nullable=False)
+
     items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
     status_history = db.relationship('OrderStatusHistory', back_populates='order', cascade='all, delete-orphan',
                                      order_by='OrderStatusHistory.changed_at')
+    messages = db.relationship('OrderMessage', back_populates='order', cascade='all, delete-orphan',
+                               order_by='OrderMessage.created_at')
 
     def __repr__(self):
         return f'<Order {self.id}>'
@@ -80,6 +85,20 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
 
     product = db.relationship('Product', backref='order_items')
+
+
+class OrderMessage(db.Model):
+    """Сообщение в чате обычного заказа."""
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    sender_type = db.Column(db.String(20), nullable=False)  # 'admin' или 'customer'
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    order = db.relationship('Order', back_populates='messages')
+
+    def __repr__(self):
+        return f'<OrderMessage {self.id}>'
 
 
 class WishlistItem(db.Model):
@@ -111,14 +130,17 @@ class CustomOrder(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # если авторизован
     name = db.Column(db.String(100), nullable=False)
     contact = db.Column(db.String(100), nullable=False)  # email или телефон
-    product_type = db.Column(db.String(50), nullable=True)  # выбранный тип изделия
-    description = db.Column(db.Text, nullable=False)  # пожелания клиента
+    product_type = db.Column(db.String(50), nullable=True)
+    description = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    image_path = db.Column(db.String(500), nullable=True)  # путь к загруженному фото
+    image_path = db.Column(db.String(500), nullable=True)
+
     user = db.relationship('User', backref='custom_orders')
     status = db.Column(db.String(20), nullable=False, default='new')
     status_history = db.relationship('CustomOrderStatusHistory', back_populates='custom_order',
                                      cascade='all, delete-orphan', order_by='CustomOrderStatusHistory.changed_at')
+    messages = db.relationship('CustomOrderMessage', back_populates='custom_order', cascade='all, delete-orphan',
+                               order_by='CustomOrderMessage.created_at')
 
     def __repr__(self):
         return f'<CustomOrder {self.id}>'
@@ -148,3 +170,17 @@ class CustomOrderStatusHistory(db.Model):
 
     def __repr__(self):
         return f'<CustomOrderStatusHistory {self.id} - {self.status}>'
+
+
+class CustomOrderMessage(db.Model):
+    """Сообщение в чате индивидуальной заявки."""
+    id = db.Column(db.Integer, primary_key=True)
+    custom_order_id = db.Column(db.Integer, db.ForeignKey('custom_order.id'), nullable=False)
+    sender_type = db.Column(db.String(20), nullable=False)  # 'admin' или 'customer'
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    custom_order = db.relationship('CustomOrder', back_populates='messages')
+
+    def __repr__(self):
+        return f'<CustomOrderMessage {self.id}>'
