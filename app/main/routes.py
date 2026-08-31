@@ -443,9 +443,13 @@ def product_detail(product_id):
                                                                          is_approved=True).scalar() or 0
     reviews_count = len(approved_reviews)
 
+    # Получаем URL изображений товара
+    image_urls = [url_for('static', filename=img.image_path) for img in product.images]
+
     return render_template('product_detail.html',
                            product=product,
                            form=form,
                            reviews=approved_reviews,
                            average_rating=average_rating,
-                           reviews_count=reviews_count)
+                           reviews_count=reviews_count,
+                           image_urls=image_urls)

@@ -8,23 +8,34 @@
         <div class="row g-4">
             <!-- Левая колонка: галерея -->
             <div class="col-lg-6">
-                <div class="product-gallery">
-                    {% if product.images %}
-                    {% set main_image = product.images|sort(attribute='order')|first %}
+                <div class="product-gallery" id="product-gallery">
+                    {% if image_urls %}
                     <!-- Главное изображение -->
-                    <img src="{{ url_for('static', filename=main_image.image_path) }}"
-                         alt="{{ product.name }}"
-                         class="main-image"
-                         id="main-product-image">
+                    <div class="main-image-container"
+                         id="main-image-container"
+                         data-images='{{ image_urls|tojson }}'
+                         data-current="0">
+                        <img src="{{ image_urls[0] }}"
+                             alt="{{ product.name }}"
+                             class="main-image"
+                             id="main-product-image">
+                        <button class="zoom-button" id="zoom-button" aria-label="Увеличить">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        {% if image_urls|length > 1 %}
+                        <div class="image-counter" id="image-counter">1 / {{ image_urls|length }}</div>
+                        {% endif %}
+                    </div>
 
-                    {% if product.images|length > 1 %}
-                    <!-- Миниатюры, появляются только если фото больше одного -->
-                    <div class="d-flex gap-2 flex-wrap mt-3">
-                        {% for image in product.images|sort(attribute='order') %}
-                        <img src="{{ url_for('static', filename=image.image_path) }}"
+                    <!-- Миниатюры -->
+                    {% if image_urls|length > 1 %}
+                    <div class="d-flex gap-2 flex-wrap mt-3 thumbnails-container">
+                        {% for url in image_urls %}
+                        <img src="{{ url }}"
                              class="thumbnail {% if loop.first %}active{% endif %}"
+                             data-index="{{ loop.index0 }}"
                              alt="Миниатюра {{ loop.index }}"
-                             onclick="document.getElementById('main-product-image').src = this.src; document.querySelectorAll('.thumbnail').forEach(el => el.classList.remove('active')); this.classList.add('active');">
+                             onclick="changeImage({{ loop.index0 }})">
                         {% endfor %}
                     </div>
                     {% endif %}

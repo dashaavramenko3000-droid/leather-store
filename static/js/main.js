@@ -274,3 +274,186 @@ if (themeToggle) {
         }
     });
 }
+
+
+// ========================
+// Улучшенная галерея товара
+// ========================
+(function () {
+    const gallery = document.getElementById('product-gallery');
+    if (!gallery) return;
+
+    const mainImage = document.getElementById('main-product-image');
+    const container = document.getElementById('main-image-container');
+    const counter = document.getElementById('image-counter');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const zoomButton = document.getElementById('zoom-button');
+
+    // Получаем список изображений из data-атрибута
+    let images = [];
+    if (container && container.dataset.images) {
+        try {
+            images = JSON.parse(container.dataset.images);
+        } catch (e) {
+            console.error('Ошибка парсинга data-images', e);
+        }
+    }
+
+    let currentIndex = parseInt(container?.dataset.current || '0');
+
+    // Функция смены изображения
+    function changeImage(index) {
+        if (index < 0 || index >= images.length) return;
+        currentIndex = index;
+        mainImage.src = images[currentIndex];
+        if (counter) {
+            counter.textContent = `${currentIndex + 1} / ${images.length}`;
+        }
+        // Обновляем активную миниатюру
+        thumbnails.forEach((thumb, i) => {
+            if (i === currentIndex) thumb.classList.add('active');
+            else thumb.classList.remove('active');
+        });
+        // Обновляем data-current
+        container.dataset.current = currentIndex;
+    }
+
+    // Навешиваем обработчик на миниатюры (если клики уже подключены через onclick, можно не дублировать)
+    thumbnails.forEach((thumb, idx) => {
+        thumb.addEventListener('click', () => changeImage(idx));
+    });
+
+    // Зум по кнопке
+    if (zoomButton) {
+        zoomButton.addEventListener('click', () => {
+            openLightbox(currentIndex);
+        });
+    }
+
+    // Двойной клик по главному изображению тоже открывает лайтбокс
+    mainImage.addEventListener('dblclick', () => openLightbox(currentIndex));
+
+    // Свайп на мобильных для главного изображения
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    container.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    container.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) { // минимальный порог свайпа
+            if (diff > 0 && currentIndex < images.length - 1) {
+                changeImage(currentIndex + 1);
+            } else if (diff < 0 && currentIndex > 0) {
+                changeImage(currentIndex - 1);
+            }
+        }
+    }, {passive: true});
+
+    // ========================
+    // Лайтбокс (полноэкранный просмотр)
+    // ========================
+    function createLightbox() {
+        // Создаём оверлей
+        const overlay = document.createElement('div');
+        overlay.className = 'lightbox-overlay';
+        overlay.id = 'lightbox-overlay';
+
+        // Кнопка закрытия
+        const closeBtn = document.createElement('span');
+        closeBtn.className = 'lightbox-close';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.onclick = closeLightbox;
+
+        // Кнопки навигации
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'lightbox-prev';
+        prevBtn.innerHTML = '&#10094;';
+        prevBtn.onclick = (e) => {
+            e.stopPropagation();
+            changeLightboxImage(-1);
+        };
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'lightbox-next';
+        nextBtn.innerHTML = '&#10095;';
+        nextBtn.onclick = (e) => {
+            e.stopPropagation();
+            changeLightboxImage(1);
+        };
+
+        // Контейнер изображения
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'lightbox-image-container';
+        const img = document.createElement('img');
+        img.className = 'lightbox-image';
+        img.id = 'lightbox-img';
+        imgContainer.appendChild(img);
+
+        // Подпись (счётчик)
+        const caption = document.createElement('div');
+        caption.className = 'lightbox-caption';
+        caption.id = 'lightbox-caption';
+
+        overlay.appendChild(closeBtn);
+        overlay.appendChild(prevBtn);
+        overlay.appendChild(nextBtn);
+        overlay.appendChild(imgContainer);
+        overlay.appendChild(caption);
+
+        // Закрытие при клике на фон
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeLightbox();
+        });
+
+        // Зум по клику на изображение
+        img.addEventListener('click', () => {
+            img.classList.toggle('zoomed');
+        });
+
+        document.body.appendChild(overlay);
+        return overlay;
+    }
+
+    const lightbox = createLightbox();
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+
+    function openLightbox(index) {
+        currentIndex = index;
+        updateLightboxImage();
+        lightbox.classList.add('show');
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('show');
+        lightboxImg.classList.remove('zoomed');
+    }
+
+    function updateLightboxImage() {
+        lightboxImg.src = images[currentIndex];
+        lightboxCaption.textContent = `${currentIndex + 1} / ${images.length}`;
+    }
+
+    function changeLightboxImage(delta) {
+        currentIndex += delta;
+        if (currentIndex < 0) currentIndex = images.length - 1;
+        if (currentIndex >= images.length) currentIndex = 0;
+        updateLightboxImage();
+    }
+
+    // Закрытие по клавише Esc
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('show')) {
+            closeLightbox();
+        }
+    });
+
+    // Инициализация
+    if (images.length > 0) {
+        changeImage(0);
+    }
+})();
