@@ -235,3 +235,20 @@ function addToCart(productId) {
             alert('Произошла ошибка при добавлении товара');
         });
 }
+
+// Бургер-меню
+const burgerMenu = document.getElementById('burger-menu');
+const mainNav = document.getElementById('main-nav');
+
+if (burgerMenu && mainNav) {
+    burgerMenu.addEventListener('click', function () {
+        mainNav.classList.toggle('open');
+    });
+
+    // Закрывать меню при клике на ссылку (необязательно)
+    mainNav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            mainNav.classList.remove('open');
+        });
+    });
+}

@@ -3,49 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Админ-панель{% endblock %}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Кожаная мастерская «Тиснение»{% endblock %}</title>
 
     <!-- Шрифты -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Montserrat:wght@300;400;500;600&display=swap"
           rel="stylesheet">
-    <!-- Общие стили сайта -->
+
+    <!-- Основной файл стилей -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- AOS -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+
+    <!-- Favicon (если есть) -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
-<body>
-{% if current_user.is_authenticated %}
-<header class="admin-header">
-    <div class="container">
+<body hx-boost="true"
+      hx-target="#main-content"
+      hx-select="#main-content"
+      hx-swap="outerHTML"
+      hx-push-url="true">
+
+<header class="site-header">
+    <div class="container header-inner">
+
+        <!-- Кнопка бургера (видна только на мобильных) -->
+        <button class="burger-menu" id="burger-menu" aria-label="Открыть меню">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Логотип -->
         <div class="logo">
-            <h1>Кожаная мастерская — Админ</h1>
+            <a href="{{ url_for('main.home') }}">Кожаная мастерская<br><span>«Тиснение»</span></a>
         </div>
-        <nav class="admin-nav">
+
+        <!-- Основная навигация -->
+        <nav class="main-nav" id="main-nav">
             <ul>
-                <li><a href="{{ url_for('admin.dashboard') }}">Панель</a></li>
-                <li><a href="{{ url_for('admin.products') }}">Товары</a></li>
-                <li><a href="{{ url_for('admin.orders') }}">Заказы</a></li>
-                <li><a href="{{ url_for('admin.custom_orders') }}">Заявки</a></li>
-                <li><a href="{{ url_for('admin.reviews') }}">Отзывы</a></li>
-                <li><a href="{{ url_for('admin.email_settings') }}">Настройки почты</a></li>
-                <li><a href="{{ url_for('admin.logout') }}">Выйти</a></li>
+                <li><a href="{{ url_for('main.home') }}">Главная</a></li>
+                <li><a href="{{ url_for('main.catalog') }}">Каталог</a></li>
+                <li><a href="{{ url_for('main.home') }}#about">О нас</a></li>
+                <li><a href="{{ url_for('main.home') }}#contacts">Контакты</a></li>
             </ul>
         </nav>
+
+        <!-- Аккаунт -->
+        <div class="header-account" id="account-menu-container">
+            <button class="account-toggle" id="account-toggle" aria-label="Аккаунт">
+                <i class="fas fa-user"></i>
+            </button>
+            <div class="account-dropdown" id="account-dropdown">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('auth.account') }}">Личный кабинет</a>
+                <a href="{{ url_for('auth.wishlist') }}">Избранное</a>
+                <a href="{{ url_for('auth.addresses') }}">Мои адреса</a>
+                <a href="{{ url_for('auth.orders') }}">Мои заказы</a>
+                <a href="{{ url_for('auth.change_password') }}">Сменить пароль</a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}">Выйти</a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}">Войти</a>
+                <a href="{{ url_for('auth.register') }}">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Корзина -->
+        <div class="header-cart">
+            <a href="{{ url_for('main.cart') }}" aria-label="Корзина" hx-boost="false">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">{{ cart_total }}</span>
+            </a>
+        </div>
+
+        <!-- Контакты -->
+        <div class="header-contacts">
+            <a href="tel:+79991234567">+7 (999) 123-45-67</a>
+        </div>
+
     </div>
 </header>
-{% endif %}
-<main class="admin-content">
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-            <div class="flash {{ category }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        {% endwith %}
+
+<main id="main-content">
+    <div class="page-transition">
         {% block content %}{% endblock %}
     </div>
 </main>
+
+<footer class="site-footer">
+    <div class="container footer-inner">
+        <p>© 2026 Кожаная мастерская «AvramenkaDa». Все права защищены.</p>
+        <p>Изделия из натуральной кожи ручной работы с тиснением.</p>
+    </div>
+</footer>
+
+<!-- Кнопка "Наверх" -->
+<button id="scrollToTopBtn" title="Наверх">↑</button>
+
+<!-- Дополнительные скрипты (Bootstrap JS, скрипты конкретных страниц) -->
+{% block extra_js %}{% endblock %}
+
+<!-- Основной скрипт -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- AOS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<!-- HTMX -->
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+<!-- Инициализация AOS -->
+<script>
+    AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+    });
+
+    // Пересчитываем AOS после HTMX-обновлений
+    document.body.addEventListener('htmx:afterSwap', function () {
+        if (window.AOS) AOS.refresh();
+    });
+</script>
+
+<!-- Лоадер -->
+<div id="page-loader">
+    <div class="loader-spinner"></div>
+</div>
+
 </body>
 </html>

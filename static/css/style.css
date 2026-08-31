@@ -2011,7 +2011,7 @@ textarea:focus {
    Отступы для кнопок
    ======================== */
 .btn {
-    margin: 0.3rem 0;          /* базовый вертикальный отступ для одиночных кнопок */
+    margin: 0.3rem 0; /* базовый вертикальный отступ для одиночных кнопок */
 }
 
 /* Если кнопка внутри flex/grid контейнера с gap, сбрасываем margin */
@@ -2066,4 +2066,78 @@ form .btn {
 .wishlist-page .btn-back:hover {
     color: var(--brown-dark);
     text-decoration: underline;
+}
+
+
+/* ---------- Бургер-меню и адаптивная шапка ---------- */
+.burger-menu {
+    display: none; /* скрыт на десктопе */
+    background: none;
+    border: none;
+    color: var(--cream);
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.3s;
+}
+
+.burger-menu:hover {
+    color: var(--accent);
+}
+
+/* Для мобильных устройств (ширина <= 768px) */
+@media (max-width: 768px) {
+    .burger-menu {
+        display: block; /* показываем бургер */
+        order: 1; /* ставим первым элементом */
+    }
+
+    .logo {
+        order: 2;
+    }
+
+    .main-nav {
+        display: none; /* скрываем меню по умолчанию */
+        width: 100%; /* занимает всю ширину шапки */
+        order: 10; /* переносим вниз */
+        background-color: var(--brown-dark);
+        padding: 10px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 10px;
+    }
+
+    .main-nav.open {
+        display: block; /* показываем при открытии */
+    }
+
+    .main-nav ul {
+        flex-direction: column; /* пункты вертикально */
+        gap: 10px;
+        text-align: center;
+    }
+
+    .header-account,
+    .header-cart,
+    .header-contacts {
+        order: 3;
+        margin-left: 0;
+    }
+
+    /* Можно также сделать все элементы шапки в столбик */
+    .header-inner {
+        flex-wrap: wrap;
+    }
+
+    .header-account,
+    .header-cart {
+        margin-left: auto; /* выравниваем иконки вправо */
+    }
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
