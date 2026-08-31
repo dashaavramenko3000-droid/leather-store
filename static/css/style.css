@@ -319,12 +319,12 @@ img {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     color: var(--cream);
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     transition: background-color 0.3s, color 0.3s;
 }
 
@@ -360,10 +360,10 @@ img {
     background: none;
     border: none;
     color: var(--cream);
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     cursor: pointer;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2140,4 +2140,231 @@ form .btn {
     margin-bottom: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ========================
+   ТЁМНАЯ ТЕМА (полное исправление)
+   ======================== */
+body.dark-theme {
+    --cream: #1a1512; /* тёмный фон страницы */
+    --white: #2a221c; /* тёмные карточки */
+    --text: #f0e6d8; /* светлый текст */
+    --brown-dark: #0f0c0a; /* для фонов шапки/футера */
+    --brown-medium: #c19a6b; /* светло-коричневый */
+    --beige: #3b2f24; /* тёмный бежевый */
+    --accent: #c19a6b; /* акцент */
+    --brown-light: #8b6b4a;
+}
+
+/* Шапка и футер */
+body.dark-theme .site-header,
+body.dark-theme .site-footer,
+body.dark-theme .admin-header {
+    background-color: var(--brown-dark) !important;
+}
+
+/* Логотип */
+body.dark-theme .logo a {
+    color: var(--beige) !important;
+}
+
+/* Пункты меню */
+body.dark-theme .main-nav a {
+    color: #f0e6d8 !important;
+}
+
+body.dark-theme .main-nav a:hover {
+    color: var(--accent) !important;
+}
+
+/* Иконки корзины и аккаунта */
+body.dark-theme .header-cart a,
+body.dark-theme .account-toggle,
+body.dark-theme .theme-toggle {
+    color: #f0e6d8 !important;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .header-cart a:hover,
+body.dark-theme .account-toggle:hover {
+    background-color: var(--accent) !important;
+    color: #0f0c0a !important;
+}
+
+/* Телефон в шапке */
+body.dark-theme .header-contacts a {
+    color: var(--accent) !important;
+}
+
+/* Выпадающее меню аккаунта */
+body.dark-theme .account-dropdown {
+    background-color: var(--white) !important;
+}
+
+body.dark-theme .account-dropdown a {
+    color: #f0e6d8 !important;
+}
+
+body.dark-theme .account-dropdown a:hover {
+    background-color: var(--beige) !important;
+    color: #0f0c0a !important;
+}
+
+/* Заголовки */
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4 {
+    color: #f0e6d8 !important;
+}
+
+/* Текст в карточках и описаниях */
+body.dark-theme .product-info h3 a,
+body.dark-theme .product-price,
+body.dark-theme .product-description,
+body.dark-theme .info-value,
+body.dark-theme .info-label,
+body.dark-theme .review-text,
+body.dark-theme .chat-text {
+    color: #f0e6d8 !important;
+}
+
+/* Цены */
+body.dark-theme .product-price {
+    color: var(--accent) !important;
+}
+
+/* Карточки и контейнеры */
+body.dark-theme .product-card,
+body.dark-theme .product-gallery,
+body.dark-theme .product-info,
+body.dark-theme .cart-item,
+body.dark-theme .cart-summary,
+body.dark-theme .profile-sidebar,
+body.dark-theme .profile-main,
+body.dark-theme .profile-edit-card,
+body.dark-theme .auth-card,
+body.dark-theme .order-detail-card,
+body.dark-theme .custom-order-card,
+body.dark-theme .admin-content .container,
+body.dark-theme .table,
+body.dark-theme .review-item {
+    background-color: var(--white) !important;
+    color: #f0e6d8 !important;
+}
+
+/* Таблицы */
+body.dark-theme .table thead {
+    background-color: #3b2f24 !important;
+}
+
+body.dark-theme .table tbody tr {
+    border-bottom: 1px solid #444 !important;
+}
+
+body.dark-theme .table tbody tr:hover {
+    background-color: #3a322a !important;
+}
+
+/* Поля форм */
+body.dark-theme .form-control,
+body.dark-theme .form-select,
+body.dark-theme input[type="text"],
+body.dark-theme input[type="email"],
+body.dark-theme input[type="password"],
+body.dark-theme input[type="number"],
+body.dark-theme textarea {
+    background-color: #2a221c !important;
+    border-color: #5a4a3a !important;
+    color: #f0e6d8 !important;
+}
+
+/* Кнопки */
+body.dark-theme .btn {
+    color: #0f0c0a !important;
+}
+
+body.dark-theme .btn-outline {
+    color: var(--accent) !important;
+    border-color: var(--accent) !important;
+}
+
+body.dark-theme .btn-outline:hover {
+    background-color: var(--accent) !important;
+    color: #0f0c0a !important;
+}
+
+/* Чат */
+body.dark-theme .chat-message.admin .chat-bubble {
+    background: #5a4a3a !important;
+}
+
+body.dark-theme .chat-message.customer .chat-bubble {
+    background: #2e4a4a !important;
+}
+
+body.dark-theme .chat-meta,
+body.dark-theme .text-muted,
+body.dark-theme .order-meta {
+    color: #bbb !important;
+}
+
+/* Модальные окна */
+body.dark-theme .modal-content {
+    background-color: var(--white) !important;
+    color: #f0e6d8 !important;
+}
+
+body.dark-theme .modal-title {
+    color: #f0e6d8 !important;
+}
+
+
+/* ---------- Новая структура правой группы шапки ---------- */
+.header-actions {
+    display: flex;
+    align-items: flex-end;
+    margin-left: 30px;
+    position: relative;
+    width: 70px;
+    height: 30px;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    color: var(--cream);
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s, color 0.3s;
+    margin-left: 10px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+
+.header-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Для мобильных: выравниваем по правому краю */
+@media (max-width: 768px) {
+    .header-actions {
+        margin-left: 0;
+    }
+
+    .header-actions-row {
+        gap: 5px;
+    }
 }
