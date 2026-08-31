@@ -77,5 +77,6 @@
     {% if not orders and not custom_orders %}
     <p class="no-orders">У вас пока нет заказов.</p>
     {% endif %}
+    <a href="{{ url_for('auth.account') }}" class="btn-back">← Назад в личный кабинет</a>
 </div>
 {% endblock %}

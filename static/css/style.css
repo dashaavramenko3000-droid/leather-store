@@ -1,21 +1,20 @@
-/* ========================
-   Кожаная мастерская «Тиснение»
-   Полный оптимизированный стилевой файл с улучшениями
-   ======================== */
+/* ==================================================================
+   КОЖАНАЯ МАСТЕРСКАЯ «ТИСНЕНИЕ» — ЕДИНЫЙ ФАЙЛ СТИЛЕЙ
+   ================================================================== */
 
-/* ---------- Переменные ---------- */
+/* ---------- Переменные цветовой палитры ---------- */
 :root {
-    --brown-dark: #2c1e14;
-    --brown-medium: #5a3e2b;
-    --brown-light: #8b6b4a;
-    --beige: #e8d5b7;
-    --cream: #f9f2e7;
-    --accent: #c19a6b;
-    --text: #3b2a1a;
+    --brown-dark: #2c1e14; /* Тёмный коричневый (шапка, футер) */
+    --brown-medium: #5a3e2b; /* Средний коричневый (заголовки, кнопки) */
+    --brown-light: #8b6b4a; /* Светлый коричневый (hover) */
+    --beige: #e8d5b7; /* Бежевый (фоны секций) */
+    --cream: #f9f2e7; /* Кремовый (общий фон) */
+    --accent: #c19a6b; /* Акцентный золотисто-коричневый */
+    --text: #3b2a1a; /* Основной тёмный текст */
     --white: #ffffff;
 }
 
-/* ---------- Базовые стили ---------- */
+/* ---------- Базовые сбросы ---------- */
 * {
     margin: 0;
     padding: 0;
@@ -40,7 +39,7 @@ body {
 }
 
 main {
-    flex: 1 0 auto;
+    flex: 1 0 auto; /* футер прижат к низу */
 }
 
 .container {
@@ -49,7 +48,7 @@ main {
     padding: 0 20px;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
     font-family: 'Playfair Display', serif;
     font-weight: 700;
 }
@@ -65,7 +64,38 @@ img {
     display: block;
 }
 
-/* ---------- Кнопки (общие улучшенные) ---------- */
+/* ---------- Анимации ---------- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInPage {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-transition {
+    animation: fadeInPage 0.5s ease;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- Кнопки (общие) ---------- */
 .btn {
     display: inline-block;
     background-color: var(--accent);
@@ -74,11 +104,12 @@ img {
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s, box-shadow 0.3s;
     text-transform: uppercase;
     letter-spacing: 1px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
 .btn:hover {
@@ -103,6 +134,32 @@ img {
     background-color: var(--accent);
     color: var(--brown-dark);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger {
+    background-color: #a94442;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #843534;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.btn-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-group .btn {
+    flex: 1 1 auto;
+    min-width: 100px;
 }
 
 /* Кнопка hero */
@@ -135,7 +192,7 @@ img {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
-/* Кнопка-leather */
+/* Кнопка leather (используется в формах) */
 .btn-leather {
     background-color: var(--accent);
     border: none;
@@ -154,7 +211,7 @@ img {
     color: #fff;
 }
 
-/* ---------- Bootstrap переопределения ---------- */
+/* ---------- Переопределение Bootstrap (если используется) ---------- */
 .btn-primary {
     background-color: var(--accent);
     border-color: var(--accent);
@@ -186,7 +243,7 @@ img {
     color: var(--brown-medium) !important;
 }
 
-/* ---------- Шапка ---------- */
+/* ---------- Шапка сайта ---------- */
 .site-header {
     background-color: var(--brown-dark);
     color: var(--cream);
@@ -252,7 +309,7 @@ img {
     font-size: 1.1rem;
 }
 
-/* Корзина */
+/* Корзина в шапке */
 .header-cart {
     margin-left: 20px;
 }
@@ -293,7 +350,7 @@ img {
     pointer-events: none;
 }
 
-/* Аккаунт */
+/* Аккаунт в шапке */
 .header-account {
     position: relative;
     margin-left: 20px;
@@ -353,7 +410,8 @@ img {
 
 /* ---------- Hero ---------- */
 .hero {
-    background-image: linear-gradient(rgba(44, 30, 20, 0.65), rgba(44, 30, 20, 0.65)), url('../img/leather_background.jpg');
+    background-image: linear-gradient(rgba(44, 30, 20, 0.65), rgba(44, 30, 20, 0.65)),
+    url('../img/leather_background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -511,6 +569,8 @@ img {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
     box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card:hover {
@@ -549,29 +609,13 @@ img {
 }
 
 .product-info h3 a {
-    color: var(--brown-dark);
+    color: inherit;
     text-decoration: none;
     transition: color 0.2s;
 }
 
 .product-info h3 a:hover {
     color: var(--accent);
-}
-
-.product-info p {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-}
-
-.product-price {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--brown-medium);
-    margin-bottom: 15px;
 }
 
 .product-type {
@@ -585,6 +629,24 @@ img {
     letter-spacing: 0.5px;
     margin-bottom: 10px;
     align-self: flex-start;
+}
+
+.product-info p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    flex-grow: 1;
+}
+
+.product-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--brown-medium);
+    margin-bottom: 15px;
 }
 
 .product-actions {
@@ -603,18 +665,13 @@ img {
     padding: 10px 15px;
     font-size: 0.9rem;
     text-align: center;
-    flex: 1;
 }
 
 /* ---------- Каталог (страница) ---------- */
-.catalog {
-    padding: 80px 0;
-}
-
-.catalog h2 {
+.catalog-page h1 {
     text-align: center;
     font-size: 2.5rem;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
     color: var(--brown-dark);
 }
 
@@ -622,6 +679,7 @@ img {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 30px;
+    padding: 10px 0;
 }
 
 .no-products {
@@ -631,7 +689,6 @@ img {
     padding: 40px 0;
 }
 
-/* Фильтры */
 .filters {
     background-color: var(--white);
     padding: 20px;
@@ -844,38 +901,7 @@ img {
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ---------- Анимации ---------- */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes fadeInPage {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.page-transition {
-    animation: fadeInPage 0.5s ease;
-}
-
-/* ---------- Формы (улучшенные) ---------- */
+/* ---------- Поля форм ---------- */
 .form-control,
 .form-select,
 input[type="text"],
@@ -920,7 +946,7 @@ textarea:focus {
     margin-top: 5px;
 }
 
-/* ---------- Элементы корзины ---------- */
+/* ---------- Корзина ---------- */
 .cart-item-img {
     width: 80px;
     height: 80px;
@@ -938,7 +964,14 @@ textarea:focus {
     font-size: 1rem;
     line-height: 1;
     border-radius: 4px;
+    background-color: var(--cream);
+    border: 1px solid #ccc;
+    cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s;
+}
+
+.qty-btn:hover:not(:disabled) {
+    background-color: var(--accent);
 }
 
 .qty-btn:disabled {
@@ -955,7 +988,16 @@ textarea:focus {
     justify-content: center;
     border-radius: 50%;
     font-size: 0.9rem;
+    color: #a94442;
+    background: transparent;
+    border: 1px solid #a94442;
+    cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
+}
+
+.remove-btn:hover {
+    background-color: #a94442;
+    color: #fff;
 }
 
 .remove-btn i {
@@ -976,7 +1018,6 @@ textarea:focus {
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     padding: 25px;
-    text-align: center;
 }
 
 .profile-avatar {
@@ -1109,6 +1150,16 @@ textarea:focus {
 .btn-back:hover {
     color: var(--brown-dark);
     text-decoration: underline;
+}
+
+/* Выравнивание пунктов бокового меню по левому краю */
+.profile-sidebar .nav {
+    text-align: left;
+}
+
+.profile-sidebar .nav-link {
+    text-align: left;
+    justify-content: flex-start;
 }
 
 /* ---------- Страница заказов ---------- */
@@ -1276,7 +1327,7 @@ textarea:focus {
     color: var(--brown-dark);
 }
 
-/* ---------- Детали индивидуального заказа (клиент) ---------- */
+/* ---------- Детали индивидуального заказа ---------- */
 .custom-order-detail-wrapper {
     padding: 40px 0;
 }
@@ -1345,11 +1396,11 @@ textarea:focus {
     border-radius: 6px;
     cursor: pointer;
     border: 2px solid transparent;
-    transition: transform 0.2s, border-color 0.2s;
+    transition: border-color 0.3s, transform 0.3s;
 }
 
 .thumbnail:hover {
-    transform: scale(1.1);
+    transform: translateY(-2px);
 }
 
 .thumbnail.active {
@@ -1412,7 +1463,7 @@ textarea:focus {
     text-decoration: underline;
 }
 
-/* ---------- Модальные окна ---------- */
+/* ---------- Модальные окна (Bootstrap и кастомные) ---------- */
 .modal-content {
     border-radius: 15px;
     border: none;
@@ -1445,6 +1496,379 @@ textarea:focus {
 
 .modal.show .modal-dialog {
     transform: translateY(0);
+}
+
+/* Кастомное модальное окно для фото */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    cursor: zoom-out;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-overlay .modal-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    cursor: auto;
+}
+
+.modal-overlay .modal-content img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 5px;
+}
+
+.modal-close {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    font-size: 40px;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* ---------- Админ-панель ---------- */
+.admin-header {
+    background-color: var(--brown-dark);
+    color: var(--cream);
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.admin-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.admin-header .logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--beige);
+}
+
+.admin-nav ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    align-items: center;
+}
+
+.admin-nav a {
+    color: var(--cream);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.admin-nav a:hover,
+.admin-nav a.active {
+    background-color: var(--accent);
+    color: var(--brown-dark);
+}
+
+.admin-content {
+    flex: 1;
+    padding: 40px 20px;
+}
+
+.admin-content .container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+}
+
+.admin-content .btn {
+    display: inline-block;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: center;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+    margin: 0;
+    border: none;
+    text-decoration: none;
+    font-weight: 600;
+    background-color: var(--accent);
+    color: var(--brown-dark);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.admin-content .btn:hover {
+    background-color: var(--brown-light);
+    color: #fff;
+}
+
+.admin-content .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.admin-content .btn-danger {
+    background-color: #a94442;
+    color: #fff;
+}
+
+.admin-content .btn-danger:hover {
+    background-color: #843534;
+}
+
+.admin-content .form-control,
+.admin-content .form-select {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background-color: #fff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
+    max-width: 100%;
+}
+
+.admin-content .form-control:focus,
+.admin-content .form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 5px rgba(193, 154, 107, 0.5);
+    outline: none;
+}
+
+.admin-content .form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a3e2b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 30px;
+}
+
+.admin-content textarea {
+    resize: vertical;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table th,
+.table td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.table thead {
+    background-color: var(--brown-medium);
+    color: var(--cream);
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.table tbody tr:hover {
+    background-color: #faf5ec;
+}
+
+.table img.product-thumb {
+    width: 60px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.flash-messages {
+    margin-bottom: 20px;
+}
+
+.flash {
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.flash.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flash.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.flash.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Бейджи статусов */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-new {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-processing {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-shipped {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.badge-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-in_progress {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Чат */
+.chat-block {
+    margin-top: 30px;
+}
+
+.chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #faf6ef;
+    border-radius: 8px;
+}
+
+.chat-message {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.chat-message.customer {
+    justify-content: flex-end;
+}
+
+.chat-message.admin {
+    justify-content: flex-start;
+}
+
+.chat-bubble {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    background: #f1ede8;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.chat-message.customer .chat-bubble {
+    background: #d1ecf1;
+}
+
+.chat-message.admin .chat-bubble {
+    background: #e8d5b7;
+}
+
+.chat-text {
+    color: var(--brown-dark);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.chat-meta {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.chat-form textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+/* ---------- Отзывы ---------- */
+.reviews-section {
+    margin-top: 40px;
+}
+
+.average-rating {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--brown-dark);
+}
+
+.stars {
+    color: #f8c146;
+    font-size: 1.5rem;
+}
+
+.review-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.review-author {
+    font-weight: 600;
+    color: var(--brown-medium);
+}
+
+.review-text {
+    color: #555;
+    white-space: pre-wrap;
 }
 
 /* ---------- Адаптивность ---------- */
@@ -1583,144 +2007,63 @@ textarea:focus {
     }
 }
 
-.chat-message {
-    margin-bottom: 10px;
-    display: flex;
-}
-
-.chat-message.admin {
-    justify-content: flex-start;
-}
-
-.chat-message.customer {
-    justify-content: flex-end;
-}
-
-.chat-bubble {
-    max-width: 70%;
-    padding: 10px 15px;
-    border-radius: 15px;
-    background: #f1ede8;
-    position: relative;
-}
-
-.chat-message.admin .chat-bubble {
-    background: #e8d5b7;
-}
-
-.chat-message.customer .chat-bubble {
-    background: #d1ecf1;
-}
-
-.chat-text {
-    color: var(--brown-dark);
-}
-
-.chat-meta {
-    font-size: 0.75rem;
-    color: #888;
-    margin-top: 5px;
-    text-align: right;
-}
-
 /* ========================
-   Чат внутри заказа/заявки
+   Отступы для кнопок
    ======================== */
-.chat-block {
-    margin-top: 30px;
+.btn {
+    margin: 0.3rem 0;          /* базовый вертикальный отступ для одиночных кнопок */
 }
 
-.chat-messages {
-    max-height: 400px;
-    overflow-y: auto;
-    margin-bottom: 15px;
-    padding: 10px;
-    background: #faf6ef;
-    border-radius: 8px;
+/* Если кнопка внутри flex/grid контейнера с gap, сбрасываем margin */
+.btn-group .btn,
+.product-actions .btn,
+.quantity-control .btn,
+.account-actions .btn,
+.filter-form .btn,
+.slider-btn,
+.qty-btn,
+.remove-btn {
+    margin: 0;
 }
 
-.chat-message {
-    display: flex;
-    margin-bottom: 10px;
+/* Дополнительный отступ для кнопок в формах */
+form .btn {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
-.chat-message.customer {
-    justify-content: flex-end;
+/* Убираем внешние отступы у кнопок, которые уже находятся в группах с отступами */
+.btn-group .btn + .btn,
+.product-actions .btn + .btn {
+    margin-left: 0;
+    margin-right: 0;
 }
 
-.chat-message.admin {
-    justify-content: flex-start;
+/* Для одиночных кнопок в конце секций можно добавить больше воздуха */
+.section > .btn,
+.card > .btn,
+.modal-body > .btn:last-child {
+    margin-bottom: 1rem;
 }
 
-.chat-bubble {
-    max-width: 70%;
-    padding: 10px 15px;
-    border-radius: 15px;
-    background: #f1ede8;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
 
-.chat-message.customer .chat-bubble {
-    background: #d1ecf1;
-}
-
-.chat-message.admin .chat-bubble {
-    background: #e8d5b7;
-}
-
-.chat-text {
+/* ---------- Страница избранного ---------- */
+.wishlist-page h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
     color: var(--brown-dark);
-    white-space: pre-wrap;
-    word-break: break-word;
+    font-family: 'Playfair Display', serif;
 }
 
-.chat-meta {
-    font-size: 0.75rem;
-    color: #888;
-    margin-top: 5px;
-    text-align: right;
+.wishlist-page .btn-back {
+    display: inline-block;
+    margin-top: 30px;
+    color: var(--brown-light);
+    text-decoration: none;
 }
 
-.chat-form textarea {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-family: inherit;
-    resize: vertical;
-    margin-bottom: 10px;
+.wishlist-page .btn-back:hover {
+    color: var(--brown-dark);
+    text-decoration: underline;
 }
-
-.chat-form .btn {
-    /* используем существующий класс .btn из style.css */
-}
-
-
-/* Стили для блока отзывов */
-    .reviews-section {
-        margin-top: 40px;
-    }
-    .average-rating {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--brown-dark);
-    }
-    .stars {
-        color: #f8c146;
-        font-size: 1.5rem;
-    }
-    .review-item {
-        background: #fff;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    .review-author {
-        font-weight: 600;
-        color: var(--brown-medium);
-    }
-    .review-text {
-        color: #555;
-        white-space: pre-wrap;
-    }

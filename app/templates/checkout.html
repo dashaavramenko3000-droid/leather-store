@@ -35,6 +35,27 @@
                     maxlength="20") }}
                     {% for error in form.customer_phone.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}
                 </div>
+                {% if saved_addresses %}
+                <div class="mb-3">
+                    <label for="saved_address" class="form-label">Сохранённые адреса</label>
+                    <select id="saved_address" class="form-select" onchange="fillAddress(this.value)">
+                        <option value="">— Выберите адрес —</option>
+                        {% for addr in saved_addresses %}
+                        <option value="{{ addr.address_line }}, {{ addr.city }}{% if addr.postal_code %}, {{ addr.postal_code }}{% endif %}">
+                            {{ addr.address_line }}, {{ addr.city }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <script>
+                    function fillAddress(value) {
+                        const addressTextarea = document.getElementById('address');
+                        if (addressTextarea) {
+                            addressTextarea.value = value;
+                        }
+                    }
+                </script>
+                {% endif %}
                 <div class="form-group">
                     {{ form.address.label }}<br>
                     {{ form.address(rows=3, class="form-control", id="customer_address",style="width:100%;
@@ -53,6 +74,7 @@
         </div>
     </div>
 </div>
+
 
 {% block scripts %}
 <script>

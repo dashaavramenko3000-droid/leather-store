@@ -22,12 +22,15 @@
             </div>
             <div class="product-info">
                 <h3>
-                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">{{ product.name }}</a>
+                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">{{
+                        product.name }}</a>
                 </h3>
                 <div class="product-price">{{ product.price }} ₽</div>
                 <div class="product-actions">
-                    <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">В корзину</button>
-                    <form action="{{ url_for('auth.remove_from_wishlist', product_id=product.id) }}" method="post" hx-boost="false">
+                    <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">В корзину
+                    </button>
+                    <form action="{{ url_for('auth.remove_from_wishlist', product_id=product.id) }}" method="post"
+                          hx-boost="false">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-outline">Удалить</button>
                     </form>
@@ -39,5 +42,6 @@
     {% else %}
     <p class="no-products">В избранном пусто.</p>
     {% endif %}
+    <a href="{{ url_for('auth.account') }}" class="btn-back">← Назад в личный кабинет</a>
 </div>
 {% endblock %}

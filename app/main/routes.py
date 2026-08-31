@@ -1,3 +1,5 @@
+from email.headerregistry import Address
+
 from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort, current_app
 from flask_login import current_user
 from sqlalchemy import func
@@ -333,7 +335,12 @@ def checkout():
         return redirect(url_for('main.order_confirmation', order_id=order.id))
 
     # GET или ошибки валидации
-    return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
+    saved_addresses = []
+    if current_user.is_authenticated:
+        saved_addresses = Address.query.filter_by(user_id=current_user.id).all()
+
+    return render_template('checkout.html', form=form, cart_items=cart_items, total=total,
+                           saved_addresses=saved_addresses)
 
 
 @main_bp.route('/order_confirmation/<int:order_id>')
@@ -430,8 +437,10 @@ def product_detail(product_id):
             return redirect(url_for('main.product_detail', product_id=product.id))
 
     # Получаем одобренные отзывы
-    approved_reviews = Review.query.filter_by(product_id=product.id, is_approved=True).order_by(Review.created_at.desc()).all()
-    average_rating = db.session.query(func.avg(Review.rating)).filter_by(product_id=product.id, is_approved=True).scalar() or 0
+    approved_reviews = Review.query.filter_by(product_id=product.id, is_approved=True).order_by(
+        Review.created_at.desc()).all()
+    average_rating = db.session.query(func.avg(Review.rating)).filter_by(product_id=product.id,
+                                                                         is_approved=True).scalar() or 0
     reviews_count = len(approved_reviews)
 
     return render_template('product_detail.html',

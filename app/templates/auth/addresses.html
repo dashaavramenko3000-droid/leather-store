@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои адреса{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2>Мои адреса</h2>
+    <a href="{{ url_for('auth.add_address') }}" class="btn btn-leather mb-3">Добавить адрес</a>
+
+    {% if addresses %}
+    <div class="row g-3">
+        {% for address in addresses %}
+        <div class="col-md-6">
+            <div class="card address-card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ address.city }}</h5>
+                    <p class="card-text">{{ address.address_line }}{% if address.postal_code %}, {{ address.postal_code
+                        }}{% endif %}</p>
+                    {% if address.is_default %}
+                    <span class="badge bg-success">Основной</span>
+                    {% else %}
+                    <a href="#"
+                       onclick="event.preventDefault(); document.getElementById('set-default-{{ address.id }}').submit();">Сделать
+                        основным</a>
+                    <form id="set-default-{{ address.id }}"
+                          action="{{ url_for('auth.set_default_address', address_id=address.id) }}" method="post"
+                          style="display: none;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    </form>
+                    {% endif %}
+                    <div class="mt-2">
+                        <a href="{{ url_for('auth.edit_address', address_id=address.id) }}"
+                           class="btn btn-sm btn-outline">Изменить</a>
+                        <form action="{{ url_for('auth.delete_address', address_id=address.id) }}" method="post"
+                              class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Удалить адрес?')">Удалить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>У вас пока нет сохранённых адресов.</p>
+    {% endif %}
+    <a href="{{ url_for('auth.account') }}" class="btn-back">← Назад в личный кабинет</a>
+</div>
+{% endblock %}

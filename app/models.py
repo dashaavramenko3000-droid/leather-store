@@ -218,3 +218,18 @@ class EmailSettings(db.Model):
 
     def __repr__(self):
         return '<EmailSettings>'
+
+
+class Address(db.Model):
+    """Адрес доставки пользователя."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    address_line = db.Column(db.String(200), nullable=False)  # улица, дом, квартира
+    city = db.Column(db.String(100), nullable=False)
+    postal_code = db.Column(db.String(20), nullable=True)
+    is_default = db.Column(db.Boolean, default=False)
+
+    user = db.relationship('User', backref='addresses')
+
+    def __repr__(self):
+        return f'<Address {self.id} - {self.city}>'

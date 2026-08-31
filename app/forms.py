@@ -143,3 +143,21 @@ class EmailSettingsForm(FlaskForm):
     mail_default_sender = StringField('Email отправителя')
     admin_email = StringField('Email администратора (для уведомлений)')
     submit = SubmitField('Сохранить')
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Текущий пароль', validators=[DataRequired()])
+    new_password = PasswordField('Новый пароль', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Повторите новый пароль', validators=[
+        DataRequired(),
+        EqualTo('new_password', message='Пароли должны совпадать')
+    ])
+    submit = SubmitField('Сохранить новый пароль')
+
+
+class AddressForm(FlaskForm):
+    address_line = StringField('Адрес (улица, дом, квартира)', validators=[DataRequired(), Length(max=200)])
+    city = StringField('Город', validators=[DataRequired(), Length(max=100)])
+    postal_code = StringField('Почтовый индекс', validators=[Optional(), Length(max=20)])
+    is_default = BooleanField('Сделать адресом по умолчанию')
+    submit = SubmitField('Сохранить')
