@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from functools import wraps
+from functools import wraps, cache
 from flask import render_template, redirect, url_for, flash, request, abort, current_app
 from flask_login import login_user, logout_user, current_user
 
@@ -87,7 +87,11 @@ def add_product():
             name=form.name.data,
             product_type=form.product_type.data,
             description=form.description.data,
-            price=form.price.data
+            price=form.price.data,
+            material=form.material.data,
+            color=form.color.data,
+            dimensions=form.dimensions.data,
+            weight=form.weight.data
         )
         db.session.add(product)
         db.session.flush()  # получить id
@@ -102,6 +106,7 @@ def add_product():
                         db.session.add(img)
 
         db.session.commit()
+        cache.clear()
         flash('Товар добавлен', 'success')
         return redirect(url_for('admin.products'))
 
@@ -118,6 +123,10 @@ def edit_product(product_id):
     if form.validate_on_submit():
         product.name = form.name.data
         product.product_type = form.product_type.data
+        product.material = form.material.data,
+        product.color = form.color.data,
+        product.dimensions = form.dimensions.data,
+        product.weight = form.weight.data
         product.description = form.description.data
         product.price = form.price.data
 
@@ -141,6 +150,7 @@ def edit_product(product_id):
                     db.session.delete(img)
 
         db.session.commit()
+        cache.clear()
         flash('Товар обновлён', 'success')
         return redirect(url_for('admin.products'))
 
@@ -158,6 +168,7 @@ def delete_product(product_id):
         delete_image_file(img.image_path)
     db.session.delete(product)
     db.session.commit()
+    cache.clear()
     flash('Товар удалён', 'success')
     return redirect(url_for('admin.products'))
 

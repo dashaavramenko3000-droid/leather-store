@@ -12,9 +12,14 @@ class Config:
     # Кэширование статики
     SEND_FILE_MAX_AGE_DEFAULT = 31536000  # 1 год
 
-    # Настройки Flask-Caching (для некритичных данных)
+    # Настройки Redis-Caching (для некритичных данных)
+    #CACHE_TYPE = os.environ.get('CACHE_TYPE', 'SimpleCache') Раскамитить для продакшена 
     CACHE_TYPE = 'SimpleCache'
-    CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+    CACHE_REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
+    CACHE_REDIS_DB = 0
+    CACHE_REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+    CACHE_DEFAULT_TIMEOUT = 300  # 5 минут по умолчанию
 
     # Включение CSRF-защиты (рекомендуется)
     WTF_CSRF_ENABLED = True

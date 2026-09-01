@@ -7,7 +7,7 @@ from sqlalchemy import func
 from ..email_utils import send_email
 from ..utils import save_image
 from . import main_bp
-from ..extensions import db
+from ..extensions import db, cache
 from ..models import Product, Order, OrderItem, CartItem, CustomOrder, Review
 from ..forms import CheckoutForm, CustomOrderForm, ReviewForm
 
@@ -35,6 +35,7 @@ def home():
 
 
 @main_bp.route('/catalog')
+@cache.cached(timeout=120, query_string=True)
 def catalog():
     """Каталог с фильтрацией по типу и цене."""
     product_type = request.args.get('type', '')
@@ -408,6 +409,7 @@ def custom_order():
 
 
 @main_bp.route('/product/<int:product_id>', methods=['GET', 'POST'])
+@cache.cached(timeout=300)
 def product_detail(product_id):
     product = db.session.get(Product, product_id)
     if not product:

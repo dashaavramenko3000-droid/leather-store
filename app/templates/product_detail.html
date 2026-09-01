@@ -53,6 +53,25 @@
                 <div class="product-info">
                     <h1 class="product-title">{{ product.name }}</h1>
                     <span class="product-type">{{ product.product_type }}</span>
+                    {% if product.material or product.color or product.dimensions or product.weight %}
+                    <div class="product-specs">
+                        <h4>Характеристики</h4>
+                        <ul>
+                            {% if product.material %}
+                            <li><strong>Материал:</strong> {{ product.material }}</li>
+                            {% endif %}
+                            {% if product.color %}
+                            <li><strong>Цвет:</strong> {{ product.color }}</li>
+                            {% endif %}
+                            {% if product.dimensions %}
+                            <li><strong>Размеры:</strong> {{ product.dimensions }}</li>
+                            {% endif %}
+                            {% if product.weight %}
+                            <li><strong>Вес:</strong> {{ product.weight }} кг</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
                     <div class="product-price">{{ product.price }} ₽</div>
                     <div class="product-description">{{ product.description }}</div>
 

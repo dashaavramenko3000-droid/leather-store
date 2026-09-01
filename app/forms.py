@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField, FileAllowed, FileField
-from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField, BooleanField
+from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField, BooleanField, \
+    FloatField
 from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp, EqualTo, Optional
 
 
@@ -26,6 +27,10 @@ class ProductForm(FlaskForm):
     ], validators=[DataRequired()])
     description = TextAreaField('Описание', validators=[DataRequired()])
     price = IntegerField('Цена, руб.', validators=[DataRequired(), NumberRange(min=0)])
+    material = StringField('Материал', validators=[Length(max=100)])
+    color = StringField('Цвет', validators=[Length(max=100)])
+    dimensions = StringField('Размеры', validators=[Length(max=100)])
+    weight = FloatField('Вес, кг', validators=[Optional()])
     images = MultipleFileField('Фотографии', validators=[
         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')
     ])

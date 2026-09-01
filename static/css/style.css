@@ -2494,3 +2494,25 @@ body.dark-theme .modal-title {
 .lightbox-next {
     right: 10px;
 }
+
+.product-specs {
+    margin-top: 20px;
+    padding: 15px;
+    background: #faf6ef;
+    border-radius: 8px;
+}
+
+.product-specs h4 {
+    color: var(--brown-dark);
+    margin-bottom: 10px;
+}
+
+.product-specs ul {
+    list-style: none;
+    padding: 0;
+}
+
+.product-specs li {
+    padding: 3px 0;
+    color: var(--text);
+}

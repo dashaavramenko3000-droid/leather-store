@@ -36,7 +36,11 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Integer, nullable=False)
     product_type = db.Column(db.String(50), nullable=False, default='Кошелёк')
-
+    material = db.Column(db.String(100), nullable=True)  # материал
+    color = db.Column(db.String(100), nullable=True)  # цвет
+    dimensions = db.Column(db.String(100), nullable=True)  # размеры (например, "20x10x5 см")
+    weight = db.Column(db.Float, nullable=True)  # вес в килограммах
+    
     images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan',
                              order_by='ProductImage.order')
 
