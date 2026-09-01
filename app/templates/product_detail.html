@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
-
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('main.catalog') }}">Каталог</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+</nav>
 {% block title %}{{ product.name }} — Кожаная мастерская «Тиснение»{% endblock %}
 
 {% block content %}

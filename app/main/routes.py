@@ -8,7 +8,7 @@ from ..email_utils import send_email
 from ..utils import save_image
 from . import main_bp
 from ..extensions import db, cache
-from ..models import Product, Order, OrderItem, CartItem, CustomOrder, Review
+from ..models import Product, Order, OrderItem, CartItem, CustomOrder, Review, Address
 from ..forms import CheckoutForm, CustomOrderForm, ReviewForm
 
 
@@ -37,7 +37,9 @@ def home():
 @main_bp.route('/catalog')
 @cache.cached(timeout=120, query_string=True)
 def catalog():
-    """Каталог с фильтрацией по типу и цене."""
+    page = request.args.get('page', 1, type=int)
+    per_page = 12  # товаров на странице
+
     product_type = request.args.get('type', '')
     min_price = request.args.get('min_price', type=int)
     max_price = request.args.get('max_price', type=int)
@@ -51,14 +53,18 @@ def catalog():
     if max_price is not None:
         query = query.filter(Product.price <= max_price)
 
-    products = query.all()
+    # Пагинация
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    products = pagination.items
+
     types = [t[0] for t in db.session.query(Product.product_type).distinct().all()]
     return render_template('catalog.html',
                            products=products,
                            current_type=product_type,
                            min_price=min_price,
                            max_price=max_price,
-                           types=types)
+                           types=types,
+                           pagination=pagination)
 
 
 @main_bp.route('/add_to_cart/<int:product_id>', methods=['POST'])

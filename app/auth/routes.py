@@ -220,16 +220,24 @@ def set_default_address(address_id):
 @auth_bp.route('/account/orders')
 @login_required
 def orders():
-    # Обычные заказы
-    user_orders = Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
-    # Индивидуальные заявки
-    custom_orders = CustomOrder.query.filter_by(user_id=current_user.id).order_by(CustomOrder.created_at.desc()).all()
 
-    return render_template(
-        'auth/orders.html',
-        orders=user_orders,
-        custom_orders=custom_orders
-    )
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    # Обычные заказы
+    user_orders = Order.query.filter_by(user_id=current_user.id) \
+        .order_by(Order.created_at.desc()) \
+        .paginate(page=page, per_page=per_page, error_out=False)
+    # Индивидуальные заказы
+    custom_orders = CustomOrder.query.filter_by(user_id=current_user.id) \
+        .order_by(CustomOrder.created_at.desc()) \
+        .paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template('auth/orders.html',
+                           orders=user_orders.items,
+                           custom_orders=custom_orders.items,
+                           orders_pagination=user_orders,
+                           custom_orders_pagination=custom_orders)
 
 
 @auth_bp.route('/account/custom-order/<int:order_id>', methods=['GET', 'POST'])
@@ -313,10 +321,19 @@ def profile():
 @auth_bp.route('/wishlist')
 @login_required
 def wishlist():
-    """Страница избранных товаров пользователя."""
-    items = WishlistItem.query.filter_by(user_id=current_user.id).order_by(WishlistItem.created_at.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+
+    pagination = WishlistItem.query.filter_by(user_id=current_user.id) \
+                                   .order_by(WishlistItem.created_at.desc()) \
+                                   .paginate(page=page, per_page=per_page, error_out=False)
+
+    items = pagination.items
     products = [item.product for item in items]
-    return render_template('auth/wishlist.html', products=products)
+
+    return render_template('auth/wishlist.html',
+                           products=products,
+                           pagination=pagination)
 
 
 @auth_bp.route('/wishlist/add/<int:product_id>', methods=['POST'])

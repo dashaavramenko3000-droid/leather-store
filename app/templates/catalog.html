@@ -1,78 +1,89 @@
 {% extends 'base.html' %}
 
-{% block title %}Наши изделия — Кожаная мастерская «Тиснение»{% endblock %}
+{% block title %}Каталог — Кожаная мастерская «Тиснение»{% endblock %}
 
 {% block content %}
-<section class="catalog-page">
-    <div class="container">
-        <h1>Наши изделия</h1>
+<div class="container catalog-page">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Каталог</li>
+        </ol>
+    </nav>
 
-        <!-- Фильтр -->
-        <div class="filters">
-            <form method="get" action="{{ url_for('main.catalog') }}" class="filter-form" hx-boost="false">
-                <div class="filter-group">
-                    <label for="type">Тип изделия:</label>
-                    <select name="type" id="type">
-                        <option value="">Все типы</option>
-                        {% for type in types %}
-                        <option value="{{ type }}" {% if current_type == type %}selected{% endif %}>{{ type }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="min_price">Цена от:</label>
-                    <input type="number" name="min_price" id="min_price"
-                           value="{{ min_price if min_price is not none else '' }}" min="0" placeholder="0">
-                </div>
-                <div class="filter-group">
-                    <label for="max_price">до:</label>
-                    <input type="number" name="max_price" id="max_price"
-                           value="{{ max_price if max_price is not none else '' }}" min="0" placeholder="Любая">
-                </div>
-                <button type="submit" class="btn">Применить</button>
-                <a href="{{ url_for('main.catalog') }}" class="btn btn-outline" hx-boost="false">Сбросить</a>
-            </form>
-        </div>
+    <h1>Наши изделия</h1>
 
-        <!-- Сетка товаров -->
-        {% if products %}
-        <div class="product-grid">
-            {% for product in products %}
-            <div class="product-card">
-                <div class="product-image">
-                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">
-                        {% set main_image = product.images|sort(attribute='order')|first %}
-                        {% if main_image %}
-                        <img src="{{ url_for('static', filename=main_image.image_path) }}" alt="{{ product.name }}">
-                        {% else %}
-                        <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения">
-                        {% endif %}
-                    </a>
-                </div>
-                <div class="product-info">
-                    <h3>
-                        <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">{{ product.name }}</a>
-                    </h3>
-                    <span class="product-type">{{ product.product_type }}</span>
-                    <p>{{ product.description }}</p>
-                    <div class="product-price">{{ product.price }} ₽</div>
-                    <div class="product-actions">
-                        <!-- Кнопка "В корзину" -->
-                        <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">В корзину</button>
+    <!-- Фильтры -->
+    <div class="filters">
+        <form method="get" action="{{ url_for('main.catalog') }}" class="filter-form" hx-boost="false">
+            <div class="filter-group">
+                <label for="type">Тип изделия:</label>
+                <select name="type" id="type">
+                    <option value="">Все типы</option>
+                    {% for type in types %}
+                    <option value="{{ type }}" {% if current_type == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="min_price">Цена от:</label>
+                <input type="number" name="min_price" id="min_price"
+                       value="{{ min_price if min_price is not none else '' }}" min="0" placeholder="0">
+            </div>
+            <div class="filter-group">
+                <label for="max_price">до:</label>
+                <input type="number" name="max_price" id="max_price"
+                       value="{{ max_price if max_price is not none else '' }}" min="0" placeholder="Любая">
+            </div>
+            <button type="submit" class="btn">Применить</button>
+            <a href="{{ url_for('main.catalog') }}" class="btn btn-outline" hx-boost="false">Сбросить</a>
+        </form>
+    </div>
 
-                        <!-- Кнопка "В избранное" -->
-                        <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}" method="post" hx-boost="false">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-outline">♡</button>
-                        </form>
-                    </div>
+    <!-- Сетка товаров -->
+    {% if products %}
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <div class="product-image">
+                <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">
+                    {% set main_image = product.images|sort(attribute='order')|first %}
+                    {% if main_image %}
+                    <img src="{{ url_for('static', filename=main_image.image_path) }}" alt="{{ product.name }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения">
+                    {% endif %}
+                </a>
+            </div>
+            <div class="product-info">
+                <h3>
+                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">{{ product.name }}</a>
+                </h3>
+                <span class="product-type">{{ product.product_type }}</span>
+                <p>{{ product.description }}</p>
+                <div class="product-price">{{ product.price }} ₽</div>
+                <div class="product-actions">
+                    <!-- Кнопка "В корзину" -->
+                    <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">В корзину</button>
+
+                    <!-- Кнопка "В избранное" -->
+                    <form action="{{ url_for('auth.add_to_wishlist', product_id=product.id) }}" method="post" hx-boost="false">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline">♡</button>
+                    </form>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <p class="no-products">Ничего не найдено. Попробуйте изменить параметры фильтра.</p>
-        {% endif %}
+        {% endfor %}
     </div>
-</section>
+
+    <!-- Пагинация -->
+    {% from "_pagination.html" import render_pagination %}
+    {{ render_pagination(pagination, 'main.catalog') }}
+
+    {% else %}
+    <p class="no-products">Ничего не найдено. Попробуйте изменить параметры фильтра.</p>
+    {% endif %}
+</div>
 {% endblock %}

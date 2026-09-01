@@ -2516,3 +2516,33 @@ body.dark-theme .modal-title {
     padding: 3px 0;
     color: var(--text);
 }
+
+
+/* ---------- Хлебные крошки ---------- */
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    list-style: none;
+    background-color: transparent;
+}
+.breadcrumb-item {
+    font-size: 0.9rem;
+    color: var(--brown-light);
+}
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    padding: 0 8px;
+    color: #aaa;
+}
+.breadcrumb-item a {
+    color: var(--brown-medium);
+    text-decoration: none;
+}
+.breadcrumb-item a:hover {
+    color: var(--accent);
+}
+.breadcrumb-item.active {
+    color: var(--text);
+}

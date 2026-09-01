@@ -4,6 +4,12 @@
 
 {% block content %}
 <div class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Личный кабинет</li>
+        </ol>
+    </nav>
     <h2>Мои адреса</h2>
     <a href="{{ url_for('auth.add_address') }}" class="btn btn-leather mb-3">Добавить адрес</a>
 

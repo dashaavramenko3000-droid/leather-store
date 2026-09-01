@@ -4,79 +4,102 @@
 
 {% block content %}
 <div class="container orders-page">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.account') }}">Личный кабинет</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Мои заказы</li>
+        </ol>
+    </nav>
+
     <h2>Мои заказы</h2>
 
     <!-- Обычные заказы -->
-    {% if orders %}
     <div class="section-title">Заказы</div>
+    {% if orders %}
     <div class="table-responsive">
         <table class="table">
             <thead>
-            <tr>
-                <th>Номер</th>
-                <th>Дата</th>
-                <th>Статус</th>
-                <th>Сумма</th>
-                <th></th>
-            </tr>
+                <tr>
+                    <th>Номер</th>
+                    <th>Дата</th>
+                    <th>Статус</th>
+                    <th>Сумма</th>
+                    <th></th>
+                </tr>
             </thead>
             <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>#{{ order.id }}</td>
-                <td>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                <td>
-                            <span class="badge-status badge-{{ order.status }}">
-                                {{ order.status }}
-                            </span>
-                </td>
-                <td>{{ order.total_price }} ₽</td>
-                <td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}" hx-boost="false"
-                       class="btn btn-sm btn-outline">Подробнее</a></td>
-            </tr>
-            {% endfor %}
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>
+                        <span class="badge-status badge-{{ order.status }}">
+                            {% if order.status == 'new' %}Новый
+                            {% elif order.status == 'processing' %}В обработке
+                            {% elif order.status == 'shipped' %}Отправлен
+                            {% elif order.status == 'completed' %}Выполнен
+                            {% elif order.status == 'cancelled' %}Отменён
+                            {% else %}{{ order.status }}{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ order.total_price }} ₽</td>
+                    <td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}" class="btn btn-sm btn-outline">Подробнее</a></td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
+    {% else %}
+    <p class="no-orders">У вас пока нет обычных заказов.</p>
     {% endif %}
+
+    <!-- Пагинация для обычных заказов -->
+    {% from "_pagination.html" import render_pagination %}
+    {{ render_pagination(orders_pagination, 'auth.orders') }}
 
     <!-- Индивидуальные заявки -->
-    {% if custom_orders %}
     <div class="section-title">Индивидуальные заявки</div>
+    {% if custom_orders %}
     <div class="table-responsive">
         <table class="table">
             <thead>
-            <tr>
-                <th>Номер</th>
-                <th>Дата</th>
-                <th>Статус</th>
-                <th>Описание</th>
-                <th></th>
-            </tr>
+                <tr>
+                    <th>Номер</th>
+                    <th>Дата</th>
+                    <th>Статус</th>
+                    <th>Описание</th>
+                    <th></th>
+                </tr>
             </thead>
             <tbody>
-            {% for custom in custom_orders %}
-            <tr>
-                <td>#{{ custom.id }}</td>
-                <td>{{ custom.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                <td>
-                            <span class="badge-status badge-{{ custom.status }}">
-                                {{ custom.status }}
-                            </span>
-                </td>
-                <td>{{ custom.description|truncate(50) }}</td>
-                <td><a href="{{ url_for('auth.custom_order_detail', order_id=custom.id) }}" hx-boost="false"
-                       class="btn btn-sm btn-outline">Подробнее</a></td>
-            </tr>
-            {% endfor %}
+                {% for custom in custom_orders %}
+                <tr>
+                    <td>#{{ custom.id }}</td>
+                    <td>{{ custom.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>
+                        <span class="badge-status badge-{{ custom.status }}">
+                            {% if custom.status == 'new' %}Новая
+                            {% elif custom.status == 'in_progress' %}В работе
+                            {% elif custom.status == 'completed' %}Выполнена
+                            {% elif custom.status == 'cancelled' %}Отменена
+                            {% else %}{{ custom.status }}{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ custom.description|truncate(50) }}</td>
+                    <td><a href="{{ url_for('auth.custom_order_detail', order_id=custom.id) }}" class="btn btn-sm btn-outline">Подробнее</a></td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
+    {% else %}
+    <p class="no-orders">У вас пока нет индивидуальных заявок.</p>
     {% endif %}
 
-    {% if not orders and not custom_orders %}
-    <p class="no-orders">У вас пока нет заказов.</p>
-    {% endif %}
-    <a href="{{ url_for('auth.account') }}" class="btn-back">← Назад в личный кабинет</a>
+    <!-- Пагинация для индивидуальных заявок -->
+    {{ render_pagination(custom_orders_pagination, 'auth.orders') }}
+    
 </div>
 {% endblock %}

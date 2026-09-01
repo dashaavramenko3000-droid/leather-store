@@ -70,12 +70,19 @@ def dashboard():
 @admin_bp.route('/products')
 @admin_required
 def products():
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
     search = request.args.get('search', '')
+    query = Product.query
     if search:
-        products_list = Product.query.filter(Product.name.ilike(f'%{search}%')).all()
-    else:
-        products_list = Product.query.all()
-    return render_template('admin/products.html', products=products_list, search=search)
+        query = query.filter(Product.name.ilike(f'%{search}%'))
+
+    pagination = query.order_by(Product.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return render_template('admin/products.html',
+                           products=pagination.items,
+                           search=search,
+                           pagination=pagination)
 
 
 @admin_bp.route('/products/add', methods=['GET', 'POST'])
@@ -176,6 +183,8 @@ def delete_product(product_id):
 @admin_bp.route('/orders')
 @admin_required
 def orders():
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
     # Получение параметров фильтрации
     filter_id = request.args.get('id', type=int)
     filter_status = request.args.get('status', '')
@@ -195,12 +204,15 @@ def orders():
         except ValueError:
             pass  # некорректная дата игнорируется
 
-    all_orders = query.order_by(Order.created_at.desc()).all()
+
+    pagination = query.order_by(Order.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
     return render_template('admin/orders.html',
-                           orders=all_orders,
+                           orders=pagination.items,
                            filter_id=filter_id,
                            filter_status=filter_status,
-                           filter_date=filter_date)
+                           filter_date=filter_date,
+                           pagination=pagination)
+
 
 
 @admin_bp.route('/orders/<int:order_id>', methods=['GET', 'POST'])
@@ -358,8 +370,10 @@ def update_custom_order_status(order_id):
 @admin_bp.route('/reviews')
 @admin_required
 def reviews():
-    all_reviews = Review.query.order_by(Review.created_at.desc()).all()
-    return render_template('admin/reviews.html', reviews=all_reviews)
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    pagination = Review.query.order_by(Review.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return render_template('admin/reviews.html', reviews=pagination.items, pagination=pagination)
 
 
 @admin_bp.route('/reviews/<int:review_id>/approve')
