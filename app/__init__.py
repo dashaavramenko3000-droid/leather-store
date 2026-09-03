@@ -1,8 +1,8 @@
 import os
 from flask import Flask, render_template
 from .config import Config
-from .extensions import db, login_manager, migrate, cache, csrf
-from .utils import create_upload_folder
+from .extensions import db, login_manager, migrate, cache, csrf, mail, compress, assets
+from .utils import create_upload_folder, init_email_settings
 
 
 def create_app(config_class=Config):
@@ -13,10 +13,14 @@ def create_app(config_class=Config):
 
     # Инициализация расширений
     db.init_app(app)
+    init_email_settings(app)
+    mail.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
     cache.init_app(app)
     csrf.init_app(app)
+    compress.init_app(app)
+    assets.init_app(app)
 
     # Создание папки для загрузок
     create_upload_folder(app)

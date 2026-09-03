@@ -3,8 +3,8 @@
 {% block title %}Индивидуальный заказ #{{ custom_order.id }}{% endblock %}
 
 {% block content %}
-<div class="custom-order-detail-wrapper">
-    <div class="custom-order-card">
+<div class="order-detail-wrapper">
+    <div class="order-detail-card">
         <div class="order-header">
             <h2>Индивидуальный заказ #{{ custom_order.id }}</h2>
             <div class="order-meta">Создан: {{ custom_order.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
@@ -34,10 +34,9 @@
             <span class="info-label">Тип изделия</span>
             <span class="info-value">{{ custom_order.product_type or '—' }}</span>
         </div>
-
-        <div class="description-block">
-            <strong>Описание:</strong><br>
-            {{ custom_order.description }}
+        <div class="info-row">
+            <span class="info-label">Описание</span>
+            <span class="info-value" style="white-space: pre-wrap;">{{ custom_order.description }}</span>
         </div>
 
         {% if custom_order.image_path %}
@@ -48,6 +47,32 @@
             </a>
         </div>
         {% endif %}
+
+        <!-- Чат -->
+        <div class="chat-block">
+            <h4>Переписка по заявке</h4>
+            <div class="chat-messages">
+                {% for msg in custom_order.messages|sort(attribute='created_at') %}
+                <div class="chat-message {{ 'admin' if msg.sender_type == 'admin' else 'customer' }}">
+                    <div class="chat-bubble">
+                        <div class="chat-text">{{ msg.message }}</div>
+                        <div class="chat-meta">
+                            {{ msg.created_at.strftime('%d.%m.%Y %H:%M') }} ·
+                            {% if msg.sender_type == 'admin' %}Менеджер{% else %}Вы{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">Сообщений пока нет. Напишите первым!</p>
+                {% endfor %}
+            </div>
+            <form method="POST" class="chat-form"
+                  action="{{ url_for('auth.custom_order_detail', order_id=custom_order.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <textarea name="message" rows="3" placeholder="Введите сообщение..." required></textarea>
+                <button type="submit" class="btn">Отправить</button>
+            </form>
+        </div>
 
         <a href="{{ url_for('auth.orders') }}" class="btn-back">← Назад к списку заказов</a>
     </div>

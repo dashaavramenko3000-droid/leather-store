@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField, FileAllowed, FileField
-from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField, BooleanField
+from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField, BooleanField, \
+    FloatField
 from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp, EqualTo, Optional
 
 
@@ -26,6 +27,10 @@ class ProductForm(FlaskForm):
     ], validators=[DataRequired()])
     description = TextAreaField('Описание', validators=[DataRequired()])
     price = IntegerField('Цена, руб.', validators=[DataRequired(), NumberRange(min=0)])
+    material = StringField('Материал', validators=[Length(max=100)])
+    color = StringField('Цвет', validators=[Length(max=100)])
+    dimensions = StringField('Размеры', validators=[Length(max=100)])
+    weight = FloatField('Вес, кг', validators=[Optional()])
     images = MultipleFileField('Фотографии', validators=[
         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')
     ])
@@ -92,9 +97,8 @@ class CheckoutForm(FlaskForm):
 
 
 class CustomOrderForm(FlaskForm):
-    """Форма заявки на индивидуальный заказ (с возможностью прикрепить фото)."""
-    name = StringField('Ваше имя', validators=[DataRequired(), Length(max=100)])
-    contact = StringField('Email или телефон', validators=[DataRequired(), Length(max=100)])
+    name = StringField('Имя', validators=[DataRequired(), Length(max=100)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     product_type = SelectField('Тип изделия', choices=[
         ('', 'Выберите тип...'),
         ('Кошелёк', 'Кошелёк'),
@@ -103,9 +107,12 @@ class CustomOrderForm(FlaskForm):
         ('Кардхолдер', 'Кардхолдер'),
         ('Другое', 'Другое')
     ], validators=[Optional()])
-    description = TextAreaField('Опишите вашу идею', validators=[DataRequired(), Length(max=1000)])
+    description = TextAreaField('Идея', validators=[DataRequired(), Length(max=1000)])
     image = FileField('Фото изделия', validators=[
         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')
+    ])
+    accept_terms = BooleanField('Я согласен с условиями индивидуального заказа', validators=[
+        DataRequired(message='Необходимо согласиться с условиями')
     ])
     submit = SubmitField('Отправить заявку')
 
@@ -123,4 +130,41 @@ class ResetPasswordForm(FlaskForm):
         DataRequired(),
         EqualTo('password', message='Пароли должны совпадать')
     ])
+    submit = SubmitField('Сохранить')
+
+
+class ReviewForm(FlaskForm):
+    rating = SelectField('Оценка', choices=[(str(i), str(i)) for i in range(1, 6)], validators=[DataRequired()])
+    text = TextAreaField('Отзыв', validators=[DataRequired(), Length(max=1000)])
+    image = FileField('Фото', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')])
+    submit = SubmitField('Оставить отзыв')
+
+
+class EmailSettingsForm(FlaskForm):
+    mail_server = StringField('SMTP сервер', validators=[DataRequired()])
+    mail_port = IntegerField('Порт', validators=[DataRequired()])
+    mail_use_ssl = BooleanField('Использовать SSL')
+    mail_use_tls = BooleanField('Использовать TLS')
+    mail_username = StringField('Логин')
+    mail_password = PasswordField('Пароль')
+    mail_default_sender = StringField('Email отправителя')
+    admin_email = StringField('Email администратора (для уведомлений)')
+    submit = SubmitField('Сохранить')
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Текущий пароль', validators=[DataRequired()])
+    new_password = PasswordField('Новый пароль', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Повторите новый пароль', validators=[
+        DataRequired(),
+        EqualTo('new_password', message='Пароли должны совпадать')
+    ])
+    submit = SubmitField('Сохранить новый пароль')
+
+
+class AddressForm(FlaskForm):
+    address_line = StringField('Адрес (улица, дом, квартира)', validators=[DataRequired(), Length(max=200)])
+    city = StringField('Город', validators=[DataRequired(), Length(max=100)])
+    postal_code = StringField('Почтовый индекс', validators=[Optional(), Length(max=20)])
+    is_default = BooleanField('Сделать адресом по умолчанию')
     submit = SubmitField('Сохранить')

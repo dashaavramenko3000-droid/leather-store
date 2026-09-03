@@ -10,23 +10,21 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 МБ
 
     # Кэширование статики
-    SEND_FILE_MAX_AGE_DEFAULT = 31536000  # 1 год
+    SEND_FILE_MAX_AGE_DEFAULT = 0  # 1 год = 31536000
 
-    # Настройки Flask-Caching (для некритичных данных)
+    # Настройки Redis-Caching (для некритичных данных)
+    # CACHE_TYPE = os.environ.get('CACHE_TYPE', 'SimpleCache') Раскамитить для продакшена
     CACHE_TYPE = 'SimpleCache'
-    CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+    CACHE_REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
+    CACHE_REDIS_DB = 0
+    CACHE_REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+    CACHE_DEFAULT_TIMEOUT = 300  # 5 минут по умолчанию
 
     # Включение CSRF-защиты (рекомендуется)
     WTF_CSRF_ENABLED = True
 
     # Отладка
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-
-    MAIL_SERVER = 'smtp.yandex.ru'  # пример
-    MAIL_PORT = 465
-    MAIL_USE_TLS = False
-    MAIL_USE_SSL = True
-    MAIL_USERNAME = 'your_email@yandex.ru'
-    MAIL_PASSWORD = 'your_password'
 
     MAX_CONTENT_LENGTH = 20 * 1024 * 1024  # 20 МБ

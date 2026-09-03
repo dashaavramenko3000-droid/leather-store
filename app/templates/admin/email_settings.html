@@ -1,0 +1,50 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Настройки почты{% endblock %}
+
+{% block content %}
+<h2>Настройки электронной почты</h2>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.mail_server.label(class="form-label") }}
+        {{ form.mail_server(class="form-control") }}
+        {% for error in form.mail_server.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+        {{ form.mail_port.label(class="form-label") }}
+        {{ form.mail_port(class="form-control") }}
+        {% for error in form.mail_port.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="form-check mb-2">
+        {{ form.mail_use_ssl(class="form-check-input") }}
+        {{ form.mail_use_ssl.label(class="form-check-label") }}
+    </div>
+    <div class="form-check mb-3">
+        {{ form.mail_use_tls(class="form-check-input") }}
+        {{ form.mail_use_tls.label(class="form-check-label") }}
+    </div>
+    <div class="mb-3">
+        {{ form.mail_username.label(class="form-label") }}
+        {{ form.mail_username(class="form-control") }}
+        {% for error in form.mail_username.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+        {{ form.mail_password.label(class="form-label") }}
+        {{ form.mail_password(class="form-control") }}
+        {% for error in form.mail_password.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+        {{ form.mail_default_sender.label(class="form-label") }}
+        {{ form.mail_default_sender(class="form-control") }}
+        {% for error in form.mail_default_sender.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+        {{ form.admin_email.label(class="form-label") }}
+        {{ form.admin_email(class="form-control") }}
+        {% for error in form.admin_email.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+    </div>
+    <button type="submit" class="btn">Сохранить</button>
+</form>
+{% endblock %}

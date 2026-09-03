@@ -1,0 +1,34 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Журнал действий{% endblock %}
+
+{% block content %}
+<h2>Журнал действий администратора</h2>
+
+{% if logs %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Администратор</th>
+                <th>Действие</th>
+                <th>Детали</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ log.admin.username or log.admin.email }}</td>
+                <td>{{ log.action }}</td>
+                <td>{{ log.details or '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>Журнал пуст.</p>
+{% endif %}
+{% endblock %}

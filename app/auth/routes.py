@@ -3,22 +3,25 @@
 Маршруты аутентификации и личного кабинета покупателя.
 Включает: регистрацию, вход/выход, профиль, историю заказов, избранное, сброс пароля.
 """
-
+from email.headerregistry import Address
 from uuid import uuid4
 from datetime import datetime, timedelta
 
 from flask import render_template, redirect, url_for, flash, request, abort, session
 from flask_login import login_user, logout_user, login_required, current_user
 
+from ..email_utils import send_email
 from . import auth_bp
 from ..extensions import db
-from ..models import User, Order, WishlistItem, Product, CartItem, CustomOrder
+from ..models import User, Order, WishlistItem, Product, CartItem, CustomOrder, OrderMessage, CustomOrderMessage, \
+    Address
 from ..forms import (
     CustomerLoginForm,
     RegistrationForm,
     UpdateProfileForm,
     ResetPasswordRequestForm,
     ResetPasswordForm,
+    ChangePasswordForm, AddressForm
 )
 
 
@@ -51,6 +54,12 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
+        send_email(
+            'Добро пожаловать в Кожаную мастерскую!',
+            [user.email],
+            'email/register.html',
+            user=user
+        )
 
         # Автоматический вход после регистрации
         login_user(user)
@@ -126,39 +135,171 @@ def account():
     return render_template('auth/account.html', user=current_user)
 
 
+@auth_bp.route('/account/addresses')
+@login_required
+def addresses():
+    user_addresses = Address.query.filter_by(user_id=current_user.id).order_by(Address.is_default.desc()).all()
+    return render_template('auth/addresses.html', addresses=user_addresses)
+
+
+@auth_bp.route('/account/addresses/add', methods=['GET', 'POST'])
+@login_required
+def add_address():
+    form = AddressForm()
+    if form.validate_on_submit():
+        # Если это первый адрес или отмечен как основной, сбрасываем is_default у остальных
+        if form.is_default.data or not Address.query.filter_by(user_id=current_user.id).first():
+            # сбрасываем все
+            Address.query.filter_by(user_id=current_user.id).update({'is_default': False})
+            is_default = True
+        else:
+            is_default = False
+
+        address = Address(
+            user_id=current_user.id,
+            address_line=form.address_line.data,
+            city=form.city.data,
+            postal_code=form.postal_code.data,
+            is_default=is_default
+        )
+        db.session.add(address)
+        db.session.commit()
+        flash('Адрес добавлен', 'success')
+        return redirect(url_for('auth.addresses'))
+    return render_template('auth/address_form.html', form=form, title='Добавить адрес')
+
+
+@auth_bp.route('/account/addresses/edit/<int:address_id>', methods=['GET', 'POST'])
+@login_required
+def edit_address(address_id):
+    address = db.session.get(Address, address_id)
+    if not address or address.user_id != current_user.id:
+        abort(404)
+
+    form = AddressForm(obj=address)
+    if form.validate_on_submit():
+        if form.is_default.data:
+            # сбрасываем is_default у всех других адресов
+            Address.query.filter_by(user_id=current_user.id).update({'is_default': False})
+        address.address_line = form.address_line.data
+        address.city = form.city.data
+        address.postal_code = form.postal_code.data
+        address.is_default = form.is_default.data
+        db.session.commit()
+        flash('Адрес обновлён', 'success')
+        return redirect(url_for('auth.addresses'))
+    return render_template('auth/address_form.html', form=form, title='Редактировать адрес')
+
+
+@auth_bp.route('/account/addresses/delete/<int:address_id>', methods=['POST'])
+@login_required
+def delete_address(address_id):
+    address = db.session.get(Address, address_id)
+    if not address or address.user_id != current_user.id:
+        abort(404)
+    db.session.delete(address)
+    db.session.commit()
+    flash('Адрес удалён', 'success')
+    return redirect(url_for('auth.addresses'))
+
+
+@auth_bp.route('/account/addresses/set-default/<int:address_id>', methods=['POST'])
+@login_required
+def set_default_address(address_id):
+    address = db.session.get(Address, address_id)
+    if not address or address.user_id != current_user.id:
+        abort(404)
+    # сбрасываем все is_default
+    Address.query.filter_by(user_id=current_user.id).update({'is_default': False})
+    address.is_default = True
+    db.session.commit()
+    flash('Основной адрес изменён', 'success')
+    return redirect(url_for('auth.addresses'))
+
+
 @auth_bp.route('/account/orders')
 @login_required
 def orders():
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
     # Обычные заказы
-    user_orders = Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
-    # Индивидуальные заявки
-    custom_orders = CustomOrder.query.filter_by(user_id=current_user.id).order_by(CustomOrder.created_at.desc()).all()
+    user_orders = Order.query.filter_by(user_id=current_user.id) \
+        .order_by(Order.created_at.desc()) \
+        .paginate(page=page, per_page=per_page, error_out=False)
+    # Индивидуальные заказы
+    custom_orders = CustomOrder.query.filter_by(user_id=current_user.id) \
+        .order_by(CustomOrder.created_at.desc()) \
+        .paginate(page=page, per_page=per_page, error_out=False)
 
-    return render_template(
-        'auth/orders.html',
-        orders=user_orders,
-        custom_orders=custom_orders
-    )
+    return render_template('auth/orders.html',
+                           orders=user_orders.items,
+                           custom_orders=custom_orders.items,
+                           orders_pagination=user_orders,
+                           custom_orders_pagination=custom_orders)
 
-@auth_bp.route('/account/custom-order/<int:order_id>')
+
+@auth_bp.route('/account/custom-order/<int:order_id>', methods=['GET', 'POST'])
 @login_required
 def custom_order_detail(order_id):
     custom_order = db.session.get(CustomOrder, order_id)
     if not custom_order or custom_order.user_id != current_user.id:
         abort(404)
+
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            msg = CustomOrderMessage(
+                custom_order_id=custom_order.id,
+                sender_type='customer',
+                message=message
+            )
+            db.session.add(msg)
+            db.session.commit()
+            flash('Сообщение отправлено', 'success')
+            return redirect(url_for('auth.custom_order_detail', order_id=custom_order.id))
+
     return render_template('auth/custom_order_detail.html', custom_order=custom_order)
 
 
-@auth_bp.route('/account/orders/<int:order_id>')
+@auth_bp.route('/account/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.current_password.data):
+            flash('Текущий пароль указан неверно', 'danger')
+            return render_template('auth/change_password.html', form=form)
+
+        current_user.set_password(form.new_password.data)
+        db.session.commit()
+        flash('Пароль успешно изменён', 'success')
+        return redirect(url_for('auth.account'))
+
+    return render_template('auth/change_password.html', form=form)
+
+
+@auth_bp.route('/account/orders/<int:order_id>', methods=['GET', 'POST'])
 @login_required
 def order_detail(order_id):
-    """Просмотр конкретного заказа пользователя."""
     order = db.session.get(Order, order_id)
-    if not order:
+    if not order or order.user_id != current_user.id:
         abort(404)
-    # Доступ разрешён только владельцу или администратору
-    if order.user_id != current_user.id and not current_user.is_admin:
-        abort(403)
+
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            msg = OrderMessage(
+                order_id=order.id,
+                sender_type='customer',
+                message=message
+            )
+            db.session.add(msg)
+            db.session.commit()
+            flash('Сообщение отправлено', 'success')
+            return redirect(url_for('auth.order_detail', order_id=order.id))
+
     return render_template('auth/order_detail.html', order=order)
 
 
@@ -180,10 +321,19 @@ def profile():
 @auth_bp.route('/wishlist')
 @login_required
 def wishlist():
-    """Страница избранных товаров пользователя."""
-    items = WishlistItem.query.filter_by(user_id=current_user.id).order_by(WishlistItem.created_at.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+
+    pagination = WishlistItem.query.filter_by(user_id=current_user.id) \
+                                   .order_by(WishlistItem.created_at.desc()) \
+                                   .paginate(page=page, per_page=per_page, error_out=False)
+
+    items = pagination.items
     products = [item.product for item in items]
-    return render_template('auth/wishlist.html', products=products)
+
+    return render_template('auth/wishlist.html',
+                           products=products,
+                           pagination=pagination)
 
 
 @auth_bp.route('/wishlist/add/<int:product_id>', methods=['POST'])
@@ -235,7 +385,13 @@ def reset_password_request():
 
             # В реальном приложении здесь будет отправка письма через Flask-Mail
             reset_url = url_for('auth.reset_password', token=token, _external=True)
-            flash(f'Ссылка для сброса пароля: {reset_url}', 'info')
+            send_email(
+                'Восстановление пароля',
+                [user.email],
+                'email/reset_password.html',
+                reset_url=reset_url
+            )
+            flash('Инструкция отправлена на ваш email.', 'info')
         else:
             # Не раскрываем, существует ли email, чтобы избежать перебора
             flash('Если такой email зарегистрирован, на него отправлено письмо.', 'info')

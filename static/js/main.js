@@ -1,4 +1,8 @@
-// Простой скрипт для плавной прокрутки к якорям
+// ========================
+// ОСНОВНОЙ СКРИПТ САЙТА
+// ========================
+
+// Плавная прокрутка к якорям
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -14,10 +18,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // Кнопка "Наверх"
 const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-
 if (scrollToTopBtn) {
     window.addEventListener('scroll', () => {
-        // Показываем кнопку, когда прокрутили больше высоты шапки (например, 150px)
         if (window.scrollY > 150) {
             scrollToTopBtn.classList.add('show');
         } else {
@@ -47,7 +49,6 @@ if (scrollToTopBtn) {
     let autoScrollInterval = null;
     let sliderEnabled = false;
 
-    // Проверка: нужен ли слайдер (ширина трека больше ширины viewport)
     function isSliderNeeded() {
         if (slides.length === 0) return false;
         const viewportWidth = viewport.clientWidth;
@@ -58,7 +59,7 @@ if (scrollToTopBtn) {
             const marginRight = parseFloat(style.marginRight) || 0;
             totalWidth += width + marginRight;
         });
-        return totalWidth > viewportWidth + 1; // +1 для надёжности
+        return totalWidth > viewportWidth + 1;
     }
 
     function enableSlider() {
@@ -66,7 +67,6 @@ if (scrollToTopBtn) {
         viewport.classList.remove('no-slider');
         if (prevBtn) prevBtn.style.display = 'flex';
         if (nextBtn) nextBtn.style.display = 'flex';
-        // Запускаем автопрокрутку, если слайдов больше одного
         if (slides.length > 1 && !autoScrollInterval) {
             startAutoScroll();
         }
@@ -126,7 +126,6 @@ if (scrollToTopBtn) {
         }
     }
 
-    // Обработчики кнопок
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
             nextSlide();
@@ -140,13 +139,11 @@ if (scrollToTopBtn) {
         });
     }
 
-    // Остановка при наведении
     if (viewport) {
         viewport.addEventListener('mouseenter', stopAutoScroll);
         viewport.addEventListener('mouseleave', restartAutoScroll);
     }
 
-    // Инициализация и реакция на изменение размера окна
     function initSlider() {
         if (isSliderNeeded()) {
             enableSlider();
@@ -156,13 +153,10 @@ if (scrollToTopBtn) {
     }
 
     initSlider();
-
-    // Пересчитываем при изменении размера окна
-    window.addEventListener('resize', () => {
-        initSlider();
-    });
+    window.addEventListener('resize', initSlider);
 })();
-// Управление лоадером страницы
+
+// Лоадер страницы
 const pageLoader = document.getElementById('page-loader');
 
 function showLoader() {
@@ -173,21 +167,17 @@ function hideLoader() {
     if (pageLoader) pageLoader.classList.remove('show');
 }
 
-// Показываем лоадер при уходе со страницы
 window.addEventListener('beforeunload', showLoader);
 
-// Скрываем лоадер после полной загрузки новой страницы
 window.addEventListener('load', function () {
-    // Небольшая задержка, чтобы лоадер не мигал
     setTimeout(hideLoader, 300);
 });
 
-// Также показываем лоадер при отправке форм (POST)
 document.addEventListener('submit', function (e) {
-    // Игнорируем формы с AJAX (если есть)
     if (e.target.closest('form[data-ajax="true"]')) return;
     showLoader();
 });
+
 // Выпадающее меню аккаунта
 const accountToggle = document.getElementById('account-toggle');
 const accountDropdown = document.getElementById('account-dropdown');
@@ -198,7 +188,6 @@ if (accountToggle && accountDropdown) {
         accountDropdown.classList.toggle('open');
     });
 
-    // Закрытие меню при клике вне его
     document.addEventListener('click', function (e) {
         if (!accountDropdown.contains(e.target) && e.target !== accountToggle) {
             accountDropdown.classList.remove('open');
@@ -206,6 +195,7 @@ if (accountToggle && accountDropdown) {
     });
 }
 
+// AJAX добавление в корзину
 function addToCart(productId) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     fetch(`/add_to_cart_ajax/${productId}`, {
@@ -218,20 +208,200 @@ function addToCart(productId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Обновляем счётчик корзины в шапке
                 const cartCount = document.querySelector('.cart-count');
                 if (cartCount) {
                     cartCount.textContent = data.cart_total;
                 }
-                // Можно показать всплывающее сообщение (например, через alert или кастомное)
-                // Простой вариант:
-                //alert(`Товар "${data.product_name}" добавлен в корзину`);
             } else {
-                alert('Ошибка: ' + data.message);
+                console.error('Ошибка:', data.message);
             }
         })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            alert('Произошла ошибка при добавлении товара');
-        });
+        .catch(error => console.error('Ошибка сети:', error));
 }
+
+// Бургер-меню
+const burgerMenu = document.getElementById('burger-menu');
+const mainNav = document.getElementById('main-nav');
+
+if (burgerMenu && mainNav) {
+    burgerMenu.addEventListener('click', function () {
+        mainNav.classList.toggle('open');
+    });
+
+    mainNav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            mainNav.classList.remove('open');
+        });
+    });
+}
+
+// Переключение тёмной темы
+const themeToggle = document.getElementById('theme-toggle');
+const currentTheme = localStorage.getItem('theme');
+
+if (currentTheme === 'dark') {
+    document.body.classList.add('dark-theme');
+    if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+}
+
+if (themeToggle) {
+    themeToggle.addEventListener('click', function () {
+        document.body.classList.toggle('dark-theme');
+        if (document.body.classList.contains('dark-theme')) {
+            localStorage.setItem('theme', 'dark');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        } else {
+            localStorage.setItem('theme', 'light');
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        }
+    });
+}
+
+// ========================
+// Кастомный лайтбокс для галереи товара
+// ========================
+(function () {
+    const gallery = document.getElementById('product-gallery');
+    if (!gallery) return;
+
+    const mainImage = document.getElementById('main-product-image');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const zoomButton = document.getElementById('zoom-button');
+    const counter = document.getElementById('image-counter');
+
+    // Собираем URL всех изображений из миниатюр
+    const images = Array.from(thumbnails).map(thumb => thumb.src);
+    if (images.length === 0 && mainImage) {
+        images.push(mainImage.src);
+    }
+
+    let currentIndex = 0;
+
+    function changeImage(index) {
+        if (index < 0 || index >= images.length) return;
+        currentIndex = index;
+        if (mainImage) {
+            mainImage.src = images[currentIndex];
+        }
+        if (counter) {
+            counter.textContent = `${currentIndex + 1} / ${images.length}`;
+        }
+        thumbnails.forEach((thumb, i) => {
+            thumb.classList.toggle('active', i === currentIndex);
+        });
+    }
+
+    thumbnails.forEach((thumb, idx) => {
+        thumb.addEventListener('click', () => changeImage(idx));
+    });
+
+    // Создание оверлея лайтбокса
+    const overlay = document.createElement('div');
+    overlay.className = 'lightbox-overlay';
+    overlay.innerHTML = `
+        <span class="lightbox-close">&times;</span>
+        <button class="lightbox-prev">&#10094;</button>
+        <button class="lightbox-next">&#10095;</button>
+        <div class="lightbox-image-container">
+            <img class="lightbox-image" src="" alt="Просмотр изображения">
+        </div>
+        <div class="lightbox-caption"></div>
+    `;
+    document.body.appendChild(overlay);
+
+    const lightboxImg = overlay.querySelector('.lightbox-image');
+    const caption = overlay.querySelector('.lightbox-caption');
+    const closeBtn = overlay.querySelector('.lightbox-close');
+    const prevBtn = overlay.querySelector('.lightbox-prev');
+    const nextBtn = overlay.querySelector('.lightbox-next');
+
+    function showLightbox(index) {
+        currentIndex = index;
+        lightboxImg.src = images[currentIndex];
+        caption.textContent = `${currentIndex + 1} / ${images.length}`;
+        overlay.classList.add('show');
+    }
+
+    function hideLightbox() {
+        overlay.classList.remove('show');
+        lightboxImg.classList.remove('zoomed');
+    }
+
+    function nextImage() {
+        currentIndex = (currentIndex + 1) % images.length;
+        lightboxImg.src = images[currentIndex];
+        caption.textContent = `${currentIndex + 1} / ${images.length}`;
+    }
+
+    function prevImage() {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        lightboxImg.src = images[currentIndex];
+        caption.textContent = `${currentIndex + 1} / ${images.length}`;
+    }
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) hideLightbox();
+    });
+
+    closeBtn.addEventListener('click', hideLightbox);
+    prevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        prevImage();
+    });
+    nextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        nextImage();
+    });
+
+    lightboxImg.addEventListener('click', () => {
+        lightboxImg.classList.toggle('zoomed');
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('show')) {
+            hideLightbox();
+        }
+    });
+
+    if (zoomButton) {
+        zoomButton.addEventListener('click', () => showLightbox(currentIndex));
+    }
+
+    if (mainImage) {
+        mainImage.addEventListener('dblclick', () => showLightbox(currentIndex));
+    }
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const container = document.querySelector('.main-image-container');
+    if (container) {
+        container.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        container.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50 && images.length > 1) {
+                if (diff > 0) changeImage(currentIndex + 1);
+                else changeImage(currentIndex - 1);
+            }
+        }, {passive: true});
+    }
+
+    if (images.length > 0) {
+        changeImage(0);
+    }
+})();
+
+const cartIcon = document.querySelector('.header-cart a');
+if (cartIcon) {
+    cartIcon.classList.add('bump');
+    setTimeout(() => cartIcon.classList.remove('bump'), 300);
+}
+
+document.querySelectorAll('.flash').forEach(flash => {
+    setTimeout(() => {
+        flash.style.display = 'none';
+    }, 5000);
+});
+

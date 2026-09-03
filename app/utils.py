@@ -4,6 +4,8 @@ from PIL import Image
 from werkzeug.utils import secure_filename
 from flask import current_app
 
+from app import db
+
 
 def create_upload_folder(app):
     """
@@ -75,3 +77,30 @@ def delete_image_file(image_path):
     # Если файл существует, удаляем его
     if os.path.exists(full_path):
         os.remove(full_path)
+
+
+def init_email_settings(app):
+    """Загружает настройки почты из БД и применяет к app.config."""
+    from .models import EmailSettings
+    from sqlalchemy.exc import ProgrammingError, OperationalError
+
+    with app.app_context():
+        try:
+            settings = db.session.get(EmailSettings, 1)
+            if not settings:
+                settings = EmailSettings(id=1)
+                db.session.add(settings)
+                db.session.commit()
+
+            # Обновляем конфигурацию приложения
+            app.config['MAIL_SERVER'] = settings.mail_server
+            app.config['MAIL_PORT'] = settings.mail_port
+            app.config['MAIL_USE_SSL'] = settings.mail_use_ssl
+            app.config['MAIL_USE_TLS'] = settings.mail_use_tls
+            app.config['MAIL_USERNAME'] = settings.mail_username
+            app.config['MAIL_PASSWORD'] = settings.mail_password
+            app.config['MAIL_DEFAULT_SENDER'] = settings.mail_default_sender
+            app.config['ADMIN_EMAIL'] = settings.admin_email
+        except (ProgrammingError, OperationalError):
+            # Таблица email_settings ещё не существует (например, при выполнении миграций)
+            pass

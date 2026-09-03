@@ -4,6 +4,12 @@
 
 {% block content %}
 <div class="container profile-wrapper">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Личный кабинет</li>
+        </ol>
+    </nav>
     <div class="row g-4">
         <!-- Боковое меню -->
         <div class="col-lg-3">
@@ -26,6 +32,14 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.profile') }}"><i class="fas fa-pencil-alt me-2"></i>Редактировать</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.addresses') }}"><i class="fas fa-home me-2"></i>Мои
+                            адреса</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.change_password') }}"><i class="fas fa-key me-2"></i>Сменить
+                            пароль</a>
                     </li>
                 </ul>
             </div>

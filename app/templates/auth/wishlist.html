@@ -4,6 +4,15 @@
 
 {% block content %}
 <div class="container wishlist-page">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.account') }}">Личный кабинет</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Избранное</li>
+        </ol>
+    </nav>
+
     <h2>Избранное</h2>
 
     {% if products %}
@@ -36,8 +45,14 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- Пагинация -->
+    {% from "_pagination.html" import render_pagination %}
+    {{ render_pagination(pagination, 'auth.wishlist') }}
+
     {% else %}
     <p class="no-products">В избранном пусто.</p>
     {% endif %}
+
 </div>
 {% endblock %}

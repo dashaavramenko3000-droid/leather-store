@@ -1,11 +1,15 @@
-from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort
-from flask_login import current_user
+from email.headerregistry import Address
 
+from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort, current_app, Response
+from flask_login import current_user
+from sqlalchemy import func
+
+from ..email_utils import send_email
 from ..utils import save_image
 from . import main_bp
-from ..extensions import db
-from ..models import Product, Order, OrderItem, CartItem, CustomOrder
-from ..forms import CheckoutForm, CustomOrderForm
+from ..extensions import db, cache
+from ..models import Product, Order, OrderItem, CartItem, CustomOrder, Review, Address
+from ..forms import CheckoutForm, CustomOrderForm, ReviewForm
 
 
 @main_bp.context_processor
@@ -31,8 +35,11 @@ def home():
 
 
 @main_bp.route('/catalog')
+@cache.cached(timeout=120, query_string=True)
 def catalog():
-    """Каталог с фильтрацией по типу и цене."""
+    page = request.args.get('page', 1, type=int)
+    per_page = 12  # товаров на странице
+
     product_type = request.args.get('type', '')
     min_price = request.args.get('min_price', type=int)
     max_price = request.args.get('max_price', type=int)
@@ -46,14 +53,18 @@ def catalog():
     if max_price is not None:
         query = query.filter(Product.price <= max_price)
 
-    products = query.all()
+    # Пагинация
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    products = pagination.items
+
     types = [t[0] for t in db.session.query(Product.product_type).distinct().all()]
     return render_template('catalog.html',
                            products=products,
                            current_type=product_type,
                            min_price=min_price,
                            max_price=max_price,
-                           types=types)
+                           types=types,
+                           pagination=pagination)
 
 
 @main_bp.route('/add_to_cart/<int:product_id>', methods=['POST'])
@@ -304,7 +315,22 @@ def checkout():
             db.session.add(order_item)
 
         db.session.commit()
-
+        # клиенту
+        send_email(
+            f'Заказ #{order.id} оформлен',
+            [order.customer_email],
+            'email/order_confirmation.html',
+            order=order
+        )
+        # администратору
+        admin_email = current_app.config.get('ADMIN_EMAIL')
+        if admin_email:
+            send_email(
+                f'Новый заказ #{order.id}',
+                [admin_email],
+                'email/order_confirmation.html',  # можно отдельный шаблон для админа
+                order=order
+            )
         # Очищаем корзину
         if current_user.is_authenticated:
             CartItem.query.filter_by(user_id=current_user.id).delete()
@@ -316,7 +342,12 @@ def checkout():
         return redirect(url_for('main.order_confirmation', order_id=order.id))
 
     # GET или ошибки валидации
-    return render_template('checkout.html', form=form, cart_items=cart_items, total=total)
+    saved_addresses = []
+    if current_user.is_authenticated:
+        saved_addresses = Address.query.filter_by(user_id=current_user.id).all()
+
+    return render_template('checkout.html', form=form, cart_items=cart_items, total=total,
+                           saved_addresses=saved_addresses)
 
 
 @main_bp.route('/order_confirmation/<int:order_id>')
@@ -362,16 +393,14 @@ def add_to_cart_ajax(product_id):
 def custom_order():
     form = CustomOrderForm()
     if form.validate_on_submit():
-
+        image_path = None
         if form.image.data:
             image_path = save_image(form.image.data)
-        else:
-            image_path = None
 
         custom_order = CustomOrder(
             user_id=current_user.id if current_user.is_authenticated else None,
             name=form.name.data,
-            contact=form.contact.data,
+            contact=form.email.data,
             product_type=form.product_type.data or None,
             description=form.description.data,
             image_path=image_path
@@ -383,10 +412,85 @@ def custom_order():
     return render_template('custom_order.html', form=form)
 
 
-@main_bp.route('/product/<int:product_id>')
+@main_bp.route('/product/<int:product_id>', methods=['GET', 'POST'])
+@cache.cached(timeout=300)
 def product_detail(product_id):
-    """Страница отдельного товара."""
     product = db.session.get(Product, product_id)
     if not product:
         abort(404)
-    return render_template('product_detail.html', product=product)
+
+    form = ReviewForm()
+    if current_user.is_authenticated and form.validate_on_submit():
+        # Проверяем, не оставлял ли уже отзыв этот пользователь для этого товара
+        existing_review = Review.query.filter_by(user_id=current_user.id, product_id=product.id).first()
+        if existing_review:
+            flash('Вы уже оставляли отзыв на этот товар.', 'warning')
+        else:
+            image_path = None
+            if form.image.data:
+                image_path = save_image(form.image.data)
+            review = Review(
+                user_id=current_user.id,
+                product_id=product.id,
+                rating=int(form.rating.data),
+                text=form.text.data,
+                is_approved=False,
+                image_path=image_path
+            )
+            db.session.add(review)
+            db.session.commit()
+            flash('Спасибо! Ваш отзыв отправлен на модерацию.', 'success')
+            return redirect(url_for('main.product_detail', product_id=product.id))
+
+    # Получаем одобренные отзывы
+    approved_reviews = Review.query.filter_by(product_id=product.id, is_approved=True).order_by(
+        Review.created_at.desc()).all()
+    average_rating = db.session.query(func.avg(Review.rating)).filter_by(product_id=product.id,
+                                                                         is_approved=True).scalar() or 0
+    reviews_count = len(approved_reviews)
+
+    # Получаем URL изображений товара
+    image_urls = [url_for('static', filename=img.image_path) for img in product.images]
+
+    return render_template('product_detail.html',
+                           product=product,
+                           form=form,
+                           reviews=approved_reviews,
+                           average_rating=average_rating,
+                           reviews_count=reviews_count,
+                           image_urls=image_urls)
+
+
+@main_bp.route('/sitemap.xml')
+def sitemap():
+    pages = []
+    # статические страницы
+    pages.append({'loc': url_for('main.home', _external=True)})
+    pages.append({'loc': url_for('main.catalog', _external=True)})
+    pages.append({'loc': url_for('main.custom_order', _external=True)})
+
+    # страницы товаров
+    products = Product.query.all()
+    for product in products:
+        pages.append({'loc': url_for('main.product_detail', product_id=product.id, _external=True)})
+
+    xml_content = render_template('sitemap.xml', pages=pages)
+    return Response(xml_content, mimetype='application/xml')
+
+
+@main_bp.route('/robots.txt')
+def robots():
+    return "User-agent: *\nDisallow: /admin\nDisallow: /account\nSitemap: {0}".format(
+        url_for('main.sitemap', _external=True))
+
+
+@main_bp.route('/delivery')
+def delivery():
+    """Страница условий доставки."""
+    return render_template('delivery.html')
+
+
+@main_bp.route('/custom-order-terms')
+def custom_order_terms():
+    """Страница условий индивидуального заказа."""
+    return render_template('custom_order_terms.html')

@@ -20,6 +20,30 @@
     </div>
 
     <div class="form-group">
+        {{ form.material.label }}<br>
+        {{ form.material(class="form-control") }}
+        {% for error in form.material.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form.color.label }}<br>
+        {{ form.color(class="form-control") }}
+        {% for error in form.color.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form.dimensions.label }}<br>
+        {{ form.dimensions(class="form-control") }}
+        {% for error in form.dimensions.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form.weight.label }}<br>
+        {{ form.weight(class="form-control") }}
+        {% for error in form.weight.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+    </div>
+
+    <div class="form-group">
         {{ form.description.label }}<br>
         {{ form.description(rows=5, class="form-control", style="width:100%; padding:8px;") }}
         {% for error in form.description.errors %}<span style="color:red;">{{ error }}</span>{% endfor %}

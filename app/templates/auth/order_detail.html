@@ -48,27 +48,53 @@
 
         <div class="order-items">
             <h4>Состав заказа</h4>
+            <div class="table-responsive">
             <table class="table">
                 <thead>
-                    <tr>
-                        <th>Товар</th>
-                        <th>Цена</th>
-                        <th>Кол-во</th>
-                        <th>Сумма</th>
-                    </tr>
+                <tr>
+                    <th>Товар</th>
+                    <th>Цена</th>
+                    <th>Кол-во</th>
+                    <th>Сумма</th>
+                </tr>
                 </thead>
                 <tbody>
-                    {% for item in order.items %}
-                    <tr>
-                        <td>{{ item.product_name }}</td>
-                        <td>{{ item.price }} ₽</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.price * item.quantity }} ₽</td>
-                    </tr>
-                    {% endfor %}
+                {% for item in order.items %}
+                <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.price }} ₽</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price * item.quantity }} ₽</td>
+                </tr>
+                {% endfor %}
                 </tbody>
             </table>
             <div class="total-block">Итого: {{ order.total_price }} ₽</div>
+        </div>
+
+        <!-- Чат -->
+        <div class="chat-block">
+            <h4>Переписка по заказу</h4>
+            <div class="chat-messages">
+                {% for msg in order.messages|sort(attribute='created_at') %}
+                <div class="chat-message {{ 'admin' if msg.sender_type == 'admin' else 'customer' }}">
+                    <div class="chat-bubble">
+                        <div class="chat-text">{{ msg.message }}</div>
+                        <div class="chat-meta">
+                            {{ msg.created_at.strftime('%d.%m.%Y %H:%M') }} ·
+                            {% if msg.sender_type == 'admin' %}Менеджер{% else %}Вы{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">Сообщений пока нет. Напишите первым!</p>
+                {% endfor %}
+            </div>
+            <form method="POST" class="chat-form" action="{{ url_for('auth.order_detail', order_id=order.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <textarea name="message" rows="3" placeholder="Введите сообщение..." required></textarea>
+                <button type="submit" class="btn">Отправить</button>
+            </form>
         </div>
 
         <a href="{{ url_for('auth.orders') }}" class="btn-back">← Назад к списку заказов</a>

@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block title %}Корзина{% endblock %}
 
 {% block content %}
@@ -43,8 +47,8 @@
                             <div class="quantity-control d-flex align-items-center gap-1">
                                 <button type="button" class="btn btn-outline-secondary btn-sm qty-btn"
                                         onclick="changeQuantity({{ item.product.id }}, -1)"
-                                        {% if item.quantity
-                                <= 1 %}disabled{% endif %}>−</button>
+                                        {% if item.quantity <= 1 %}disabled{% endif %}>−
+                                </button>
                                 <span class="fw-bold mx-1 qty-value"
                                       id="qty-{{ item.product.id }}">{{ item.quantity }}</span>
                                 <button type="button" class="btn btn-outline-secondary btn-sm qty-btn"
@@ -88,8 +92,7 @@
                         <span id="cart-total">{{ total }} ₽</span>
                     </div>
                     <a href="{{ url_for('main.checkout') }}" class="btn btn-primary w-100 mt-3">Оформить заказ</a>
-                    <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary w-100 mt-2">Продолжить
-                        покупки</a>
+                    <a href="{{ url_for('main.catalog') }}" class="btn btn-primary w-100 mt-2">Продолжить покупки</a>
                 </div>
             </div>
         </div>
