@@ -393,16 +393,14 @@ def add_to_cart_ajax(product_id):
 def custom_order():
     form = CustomOrderForm()
     if form.validate_on_submit():
-
+        image_path = None
         if form.image.data:
             image_path = save_image(form.image.data)
-        else:
-            image_path = None
 
         custom_order = CustomOrder(
             user_id=current_user.id if current_user.is_authenticated else None,
             name=form.name.data,
-            contact=form.contact.data,
+            contact=form.email.data,
             product_type=form.product_type.data or None,
             description=form.description.data,
             image_path=image_path
@@ -490,3 +488,9 @@ def robots():
 def delivery():
     """Страница условий доставки."""
     return render_template('delivery.html')
+
+
+@main_bp.route('/custom-order-terms')
+def custom_order_terms():
+    """Страница условий индивидуального заказа."""
+    return render_template('custom_order_terms.html')

@@ -2253,9 +2253,10 @@ body.dark-theme .page-item.active .page-link {
     .summary-total {
         font-size: 1.2rem;
     }
-} .header-actions
+}
 
-/* ---------- Индивидуальный заказ ---------- */
+.header-actions
+    /* ---------- Индивидуальный заказ ---------- */
 .custom-order-page {
     padding: 40px 0;
 }
@@ -2453,4 +2454,17 @@ body.dark-theme .custom-order-page .form-select {
     padding: 5px 10px;
     border-radius: 20px;
     letter-spacing: 0.5px;
+}
+
+/* Дополнительно для кнопки отправки, когда чекбокс не отмечен */
+#submit-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Отступ для текста подтверждения */
+.custom-terms-confirmation {
+    margin-top: 2rem;           /* расстояние сверху */
+    font-weight: 600;
+    color: var(--brown-dark);
 }

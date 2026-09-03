@@ -11,27 +11,27 @@
     <div class="row justify-content-center">
         <div class="col-lg-8 col-md-10">
             <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-header bg-dark text-white text-center py-4 rounded-top-4"
+                <div class="card-header text-white text-center py-4 rounded-top-4"
                      style="background: linear-gradient(135deg, #2c1e14, #5a3e2b);">
                     <h1 class="h3 mb-2">Индивидуальный заказ</h1>
                     <p class="mb-0 text-light">Расскажите нам о своей идее, и мы воплотим её в коже</p>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <form method="POST" enctype="multipart/form-data" hx-boost="false">
+                    <form method="POST" enctype="multipart/form-data" hx-boost="false" id="custom-order-form">
                         {{ form.hidden_tag() }}
 
                         <div class="mb-3">
                             {{ form.name.label(class="form-label fw-semibold") }}
-                            {{ form.name(class="form-control", placeholder="Как к вам обращаться?") }}
+                            {{ form.name(class="form-control", placeholder="Ваше имя") }}
                             {% for error in form.name.errors %}
                                 <div class="text-danger small">{{ error }}</div>
                             {% endfor %}
                         </div>
 
                         <div class="mb-3">
-                            {{ form.contact.label(class="form-label fw-semibold") }}
-                            {{ form.contact(class="form-control", placeholder="Email или телефон") }}
-                            {% for error in form.contact.errors %}
+                            {{ form.email.label(class="form-label fw-semibold") }}
+                            {{ form.email(class="form-control", placeholder="Email") }}
+                            {% for error in form.email.errors %}
                                 <div class="text-danger small">{{ error }}</div>
                             {% endfor %}
                         </div>
@@ -46,7 +46,7 @@
 
                         <div class="mb-3">
                             {{ form.description.label(class="form-label fw-semibold") }}
-                            {{ form.description(class="form-control", rows=5, placeholder="Опишите изделие, которое хотите заказать: размер, цвет, тиснение, особенности...") }}
+                            {{ form.description(class="form-control", rows=5, placeholder="Опишите вашу идею, размеры, цвет, тиснение...") }}
                             {% for error in form.description.errors %}
                                 <div class="text-danger small">{{ error }}</div>
                             {% endfor %}
@@ -61,8 +61,19 @@
                             <div class="form-text">Можно загрузить фото изделия (до 20 МБ)</div>
                         </div>
 
-                        <button type="submit" class="btn btn-lg w-100 mt-3"
-                                style="background-color: #c19a6b; color: #2c1e14; font-weight: 600; letter-spacing: 1px; border: none; border-radius: 8px;">
+                        <div class="form-check mb-3">
+                            {{ form.accept_terms(class="form-check-input", id="accept-terms") }}
+                            <label class="form-check-label" for="accept-terms">
+                                Я согласен(на) с <a href="{{ url_for('main.custom_order_terms') }}" target="_blank">условиями индивидуального заказа</a>
+                            </label>
+                            {% for error in form.accept_terms.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" id="submit-btn" class="btn btn-lg w-100 mt-3"
+                                style="background-color: #c19a6b; color: #2c1e14; font-weight: 600; letter-spacing: 1px; border: none; border-radius: 8px;"
+                                disabled>
                             Отправить заявку
                         </button>
                     </form>
@@ -71,4 +82,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    const checkbox = document.getElementById('accept-terms');
+    const submitBtn = document.getElementById('submit-btn');
+
+    function toggleSubmit() {
+        submitBtn.disabled = !checkbox.checked;
+        if (checkbox.checked) {
+            submitBtn.classList.remove('opacity-50');
+        } else {
+            submitBtn.classList.add('opacity-50');
+        }
+    }
+
+    checkbox.addEventListener('change', toggleSubmit);
+    toggleSubmit();  // инициализация
+</script>
 {% endblock %}

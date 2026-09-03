@@ -97,9 +97,8 @@ class CheckoutForm(FlaskForm):
 
 
 class CustomOrderForm(FlaskForm):
-    """Форма заявки на индивидуальный заказ (с возможностью прикрепить фото)."""
-    name = StringField('Ваше имя', validators=[DataRequired(), Length(max=100)])
-    contact = StringField('Email или телефон', validators=[DataRequired(), Length(max=100)])
+    name = StringField('Имя', validators=[DataRequired(), Length(max=100)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     product_type = SelectField('Тип изделия', choices=[
         ('', 'Выберите тип...'),
         ('Кошелёк', 'Кошелёк'),
@@ -108,9 +107,12 @@ class CustomOrderForm(FlaskForm):
         ('Кардхолдер', 'Кардхолдер'),
         ('Другое', 'Другое')
     ], validators=[Optional()])
-    description = TextAreaField('Опишите вашу идею', validators=[DataRequired(), Length(max=1000)])
+    description = TextAreaField('Идея', validators=[DataRequired(), Length(max=1000)])
     image = FileField('Фото изделия', validators=[
         FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Только изображения!')
+    ])
+    accept_terms = BooleanField('Я согласен с условиями индивидуального заказа', validators=[
+        DataRequired(message='Необходимо согласиться с условиями')
     ])
     submit = SubmitField('Отправить заявку')
 
