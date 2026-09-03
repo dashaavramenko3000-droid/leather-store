@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% block title %}Оформление заказа{% endblock %}
 
 {% block content %}
@@ -13,129 +17,131 @@
         </ol>
     </nav>
 
-    <h2>Оформление заказа</h2>
+    <h2 class="text-center mb-4">Оформление заказа</h2>
 
     <div class="row g-4">
-        <!-- Левая колонка:  адрес -->
+        <!-- Левая колонка: форма -->
         <div class="col-lg-7">
-            <!-- Форма оформления -->
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form method="POST" hx-boost="false">
-                        {{ form.hidden_tag() }}
+            <div class="checkout-card">
+                <h5>Контактные данные</h5>
+                <form method="POST" hx-boost="false">
+                    {{ form.hidden_tag() }}
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.customer_name.label(class="form-label") }}
-                                {{ form.customer_name(class="form-control", placeholder="Ваше имя") }}
-                                {% for error in form.customer_name.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.customer_email.label(class="form-label") }}
-                                {{ form.customer_email(class="form-control", placeholder="Email") }}
-                                {% for error in form.customer_email.errors %}
-                                <div class="text-danger">{{ error }}</div>
-                                {% endfor %}
-                            </div>
+                    <!-- Имя -->
+                    <div class="mb-3">
+                        {{ form.customer_name.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            {{ form.customer_name(class="form-control", placeholder="Ваше имя") }}
                         </div>
+                        {% for error in form.customer_name.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
 
-                        <div class="mb-3">
-                            {{ form.customer_phone.label(class="form-label") }}
+                    <!-- Email -->
+                    <div class="mb-3">
+                        {{ form.customer_email.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            {{ form.customer_email(class="form-control", placeholder="Email") }}
+                        </div>
+                        {% for error in form.customer_email.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Телефон -->
+                    <div class="mb-3">
+                        {{ form.customer_phone.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
                             {{ form.customer_phone(class="form-control", placeholder="Телефон") }}
-                            {% for error in form.customer_phone.errors %}
-                            <div class="text-danger">{{ error }}</div>
+                        </div>
+                        {% for error in form.customer_phone.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Сохранённые адреса (если есть) -->
+                    {% if saved_addresses %}
+                    <div class="mb-3">
+                        <label for="saved_address" class="form-label">Сохранённые адреса</label>
+                        <select id="saved_address" class="form-select" onchange="fillAddress(this.value)">
+                            <option value="">— Выберите адрес —</option>
+                            {% for addr in saved_addresses %}
+                            <option value="{{ addr.address_line }}, {{ addr.city }}{% if addr.postal_code %}, {{ addr.postal_code }}{% endif %}">
+                                {{ addr.address_line }}, {{ addr.city }}
+                            </option>
                             {% endfor %}
-                        </div>
+                        </select>
+                    </div>
+                    {% endif %}
 
-                        {% if saved_addresses %}
-                        <div class="mb-3">
-                            <label for="saved_address" class="form-label">Сохранённые адреса</label>
-                            <select id="saved_address" class="form-select" onchange="fillAddress(this.value)">
-                                <option value="">— Выберите адрес —</option>
-                                {% for addr in saved_addresses %}
-                                <option value="{{ addr.address_line }}, {{ addr.city }}{% if addr.postal_code %}, {{ addr.postal_code }}{% endif %}">
-                                    {{ addr.address_line }}, {{ addr.city }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        {% endif %}
-
-                        <div class="mb-3">
-                            {{ form.address.label(class="form-label") }}
+                    <!-- Адрес -->
+                    <div class="mb-3">
+                        {{ form.address.label(class="form-label") }}
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
                             {{ form.address(class="form-control", rows=3, placeholder="Адрес доставки") }}
-                            {% for error in form.address.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
                         </div>
+                        {% for error in form.address.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
 
-                        <div class="mb-3">
-                            {{ form.comment.label(class="form-label") }}
-                            {{ form.comment(class="form-control", rows=3, placeholder="Комментарий к заказу") }}
-                            {% for error in form.comment.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
+                    <!-- Комментарий -->
+                    <div class="mb-3">
+                        {{ form.comment.label(class="form-label") }}
+                        {{ form.comment(class="form-control", rows=3, placeholder="Комментарий к заказу") }}
+                        {% for error in form.comment.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
 
-                        <button type="submit" class="btn btn-leather w-100">Подтвердить заказ</button>
-                    </form>
-                </div>
+                    <button type="submit" class="btn btn-confirm">Подтвердить заказ</button>
+                </form>
             </div>
         </div>
 
-
-        <!-- Правая колонка: товары и сводка -->
+        <!-- Правая колонка: ваш заказ и сводка -->
         <div class="col-lg-5">
-            <!-- Блок "Ваш заказ" -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Ваш заказ</h5>
-                </div>
-                <div class="card-body">
-                    {% for item in cart_items %}
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="me-3">
-                            {% set main_image = item.product.images|sort(attribute='order')|first %}
-                            {% if main_image %}
-                            <img src="{{ url_for('static', filename=main_image.image_path) }}" class="cart-item-img"
-                                 alt="{{ item.product.name }}">
-                            {% else %}
-                            <img src="{{ url_for('static', filename='img/placeholder.png') }}" class="cart-item-img"
-                                 alt="Нет изображения">
-                            {% endif %}
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1">{{ item.product.name }}</h6>
-                            <span class="badge bg-secondary">{{ item.product.product_type }}</span>
-                            <div class="text-muted small">{{ item.quantity }} × {{ item.product.price }} ₽</div>
-                        </div>
-                        <div class="fw-bold">{{ item.subtotal }} ₽</div>
+            <div class="checkout-card">
+                <h5>Ваш заказ</h5>
+                {% for item in cart_items %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        {% set main_image = item.product.images|sort(attribute='order')|first %}
+                        {% if main_image %}
+                        <img src="{{ url_for('static', filename=main_image.image_path) }}" class="cart-item-img"
+                             alt="{{ item.product.name }}">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/placeholder.png') }}" class="cart-item-img"
+                             alt="Нет изображения">
+                        {% endif %}
                     </div>
-                    {% endfor %}
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ item.product.name }}</h6>
+                        <span class="badge badge-product-type">{{ item.product.product_type }}</span>
+                        <div class="text-muted small">{{ item.quantity }} × {{ item.product.price }} ₽</div>
+                    </div>
+                    <div class="fw-bold">{{ item.subtotal }} ₽</div>
                 </div>
-            </div>
+                {% endfor %}
 
-            <!-- Блок "Сводка" -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Сводка</h5>
+                <hr>
+
+                <div class="summary-row">
+                    <span>Товары ({{ cart_items|length }})</span>
+                    <span>{{ total }} ₽</span>
                 </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Товары ({{ cart_items|length }})</span>
-                        <span>{{ total }} ₽</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Доставка</span>
-                        <span>Рассчитывается после оформления</span>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between fs-5 fw-bold">
-                        <span>Итого</span>
-                        <span>{{ total }} ₽</span>
-                    </div>
+                <div class="summary-row">
+                    <span>Доставка</span>
+                    <span>Рассчитывается после оформления</span>
+                </div>
+                <div class="summary-total d-flex justify-content-between">
+                    <span>Итого</span>
+                    <span>{{ total }} ₽</span>
                 </div>
             </div>
         </div>

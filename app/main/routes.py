@@ -1,6 +1,6 @@
 from email.headerregistry import Address
 
-from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort, current_app
+from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort, current_app, Response
 from flask_login import current_user
 from sqlalchemy import func
 
@@ -461,3 +461,32 @@ def product_detail(product_id):
                            average_rating=average_rating,
                            reviews_count=reviews_count,
                            image_urls=image_urls)
+
+
+@main_bp.route('/sitemap.xml')
+def sitemap():
+    pages = []
+    # статические страницы
+    pages.append({'loc': url_for('main.home', _external=True)})
+    pages.append({'loc': url_for('main.catalog', _external=True)})
+    pages.append({'loc': url_for('main.custom_order', _external=True)})
+
+    # страницы товаров
+    products = Product.query.all()
+    for product in products:
+        pages.append({'loc': url_for('main.product_detail', product_id=product.id, _external=True)})
+
+    xml_content = render_template('sitemap.xml', pages=pages)
+    return Response(xml_content, mimetype='application/xml')
+
+
+@main_bp.route('/robots.txt')
+def robots():
+    return "User-agent: *\nDisallow: /admin\nDisallow: /account\nSitemap: {0}".format(
+        url_for('main.sitemap', _external=True))
+
+
+@main_bp.route('/delivery')
+def delivery():
+    """Страница условий доставки."""
+    return render_template('delivery.html')

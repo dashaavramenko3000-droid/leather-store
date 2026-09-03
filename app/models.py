@@ -40,7 +40,7 @@ class Product(db.Model):
     color = db.Column(db.String(100), nullable=True)  # цвет
     dimensions = db.Column(db.String(100), nullable=True)  # размеры (например, "20x10x5 см")
     weight = db.Column(db.Float, nullable=True)  # вес в килограммах
-    
+
     images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan',
                              order_by='ProductImage.order')
 
@@ -237,3 +237,17 @@ class Address(db.Model):
 
     def __repr__(self):
         return f'<Address {self.id} - {self.city}>'
+
+
+class AdminLog(db.Model):
+    """Журнал действий администратора."""
+    id = db.Column(db.Integer, primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    action = db.Column(db.String(200), nullable=False)
+    details = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    admin = db.relationship('User', backref='admin_logs')
+
+    def __repr__(self):
+        return f'<AdminLog {self.id} - {self.action}>'

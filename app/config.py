@@ -10,10 +10,10 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 МБ
 
     # Кэширование статики
-    SEND_FILE_MAX_AGE_DEFAULT = 31536000  # 1 год
+    SEND_FILE_MAX_AGE_DEFAULT = 0  # 1 год = 31536000
 
     # Настройки Redis-Caching (для некритичных данных)
-    #CACHE_TYPE = os.environ.get('CACHE_TYPE', 'SimpleCache') Раскамитить для продакшена 
+    # CACHE_TYPE = os.environ.get('CACHE_TYPE', 'SimpleCache') Раскамитить для продакшена
     CACHE_TYPE = 'SimpleCache'
     CACHE_REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
     CACHE_REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
