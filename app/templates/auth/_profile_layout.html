@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container profile-wrapper">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('auth.account') }}">Личный кабинет</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% block breadcrumb_title %}Обзор{% endblock %}</li>
+        </ol>
+    </nav>
+
+    <div class="profile-layout">
+        <aside class="profile-sidebar">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h4 class="profile-name">{{ current_user.full_name or 'Пользователь' }}</h4>
+            <p class="profile-email">{{ current_user.email }}</p>
+
+            <ul class="profile-nav">
+                <li>
+                    <a href="{{ url_for('auth.account') }}" class="profile-link active" data-title="Обзор" hx-boost="false">
+                        <i class="fas fa-home"></i> Обзор
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.orders') }}" class="profile-link" data-title="Мои заказы" hx-boost="false">
+                        <i class="fas fa-shopping-bag"></i> Мои заказы
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.wishlist') }}" class="profile-link" data-title="Избранное" hx-boost="false">
+                        <i class="fas fa-heart"></i> Избранное
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.profile') }}" class="profile-link" data-title="Редактировать профиль" hx-boost="false">
+                        <i class="fas fa-pencil-alt"></i> Редактировать профиль
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.addresses') }}" class="profile-link" data-title="Мои адреса" hx-boost="false">
+                        <i class="fas fa-map-marker-alt"></i> Мои адреса
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.change_password') }}" class="profile-link" data-title="Сменить пароль" hx-boost="false">
+                        <i class="fas fa-key"></i> Сменить пароль
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <section class="profile-main" id="profile-content">
+            {% block profile_content %}{% endblock %}
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 /**
  * Общие утилиты: лоадер, кнопка "Наверх", плавная прокрутка, аккаунт, бургер-меню,
- * а также автоматическое скрытие flash-уведомлений.
+ * автоматическое скрытие flash-уведомлений и SPA-навигация в личном кабинете.
  */
 export function initCommon(): void {
     // Плавная прокрутка к якорям
@@ -30,31 +30,17 @@ export function initCommon(): void {
                 scrollToTopBtn.classList.remove('show');
             }
         });
-
         scrollToTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth',
-            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
-    // Лоадер страницы
+    // Лоадер
     const pageLoader = document.getElementById('page-loader') as HTMLElement | null;
-
-    function showLoader(): void {
-        pageLoader?.classList.add('show');
-    }
-
-    function hideLoader(): void {
-        pageLoader?.classList.remove('show');
-    }
-
+    function showLoader(): void { pageLoader?.classList.add('show'); }
+    function hideLoader(): void { pageLoader?.classList.remove('show'); }
     window.addEventListener('beforeunload', showLoader);
-    window.addEventListener('load', () => {
-        setTimeout(hideLoader, 300);
-    });
-
+    window.addEventListener('load', () => { setTimeout(hideLoader, 300); });
     document.addEventListener('submit', (e: SubmitEvent) => {
         const form = e.target as HTMLFormElement;
         if (form.closest('form[data-ajax="true"]')) return;
@@ -64,28 +50,14 @@ export function initCommon(): void {
     // Выпадающее меню аккаунта
     const accountToggle = document.getElementById('account-toggle') as HTMLButtonElement | null;
     const accountDropdown = document.getElementById('account-dropdown') as HTMLElement | null;
-
     if (accountToggle && accountDropdown) {
         accountToggle.addEventListener('click', (e: Event) => {
             e.stopPropagation();
             accountDropdown.classList.toggle('open');
         });
-
         document.addEventListener('click', (e: MouseEvent) => {
             if (!accountDropdown.contains(e.target as Node) && e.target !== accountToggle) {
                 accountDropdown.classList.remove('open');
-            }
-        });
-
-        // Закрытие меню при клике на «Выйти» и показ лоадера
-        document.addEventListener('click', (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            const logoutLink = target.closest('.account-dropdown a[href*="logout"]');
-            if (logoutLink) {
-                accountDropdown?.classList.remove('open');
-                // Опционально показать лоадер
-                const pageLoader = document.getElementById('page-loader') as HTMLElement | null;
-                pageLoader?.classList.add('show');
             }
         });
     }
@@ -93,7 +65,6 @@ export function initCommon(): void {
     // Бургер-меню
     const burgerMenu = document.getElementById('burger-menu') as HTMLButtonElement | null;
     const mainNav = document.getElementById('main-nav') as HTMLElement | null;
-
     if (burgerMenu && mainNav) {
         burgerMenu.addEventListener('click', () => {
             mainNav.classList.toggle('open');
@@ -103,7 +74,6 @@ export function initCommon(): void {
                 icon.classList.toggle('fa-times');
             }
         });
-
         mainNav.querySelectorAll('a').forEach((link) => {
             link.addEventListener('click', () => {
                 mainNav.classList.remove('open');
@@ -114,7 +84,6 @@ export function initCommon(): void {
                 }
             });
         });
-
         document.addEventListener('click', (e: MouseEvent) => {
             if (!mainNav.contains(e.target as Node) && !burgerMenu.contains(e.target as Node)) {
                 mainNav.classList.remove('open');
@@ -135,6 +104,76 @@ export function initCommon(): void {
             el.style.opacity = '0';
             el.style.transform = 'translateX(30px)';
             setTimeout(() => el.remove(), 500);
-        }, 5000); // скрыть через 5 секунд
+        }, 5000);
+    });
+
+    // SPA-навигация внутри личного кабинета
+    initProfileNavigation();
+}
+
+/**
+ * Инициализирует SPA-навигацию в личном кабинете.
+ */
+function initProfileNavigation(): void {
+    const profileLinks = document.querySelectorAll<HTMLAnchorElement>('.profile-link');
+    if (profileLinks.length === 0) return;
+
+    const profileContent = document.getElementById('profile-content') as HTMLElement | null;
+    const pageLoader = document.getElementById('page-loader') as HTMLElement | null;
+
+    // Функция подсветки активного пункта
+    const setActive = (link: HTMLAnchorElement): void => {
+        profileLinks.forEach((el) => el.classList.remove('active'));
+        link.classList.add('active');
+    };
+
+    // Обработчик клика по ссылкам меню
+    document.addEventListener('click', (e: MouseEvent) => {
+        const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('.profile-link');
+        if (!link) return;
+
+        e.preventDefault();
+        const url = link.href;
+
+        // Мгновенно подсвечиваем выбранный пункт
+        setActive(link);
+
+        // Показываем лоадер
+        pageLoader?.classList.add('show');
+
+        // Загружаем содержимое через fetch
+        fetch(url, { headers: { 'X-Requested-With': 'fetch' } })
+            .then((response) => {
+                if (!response.ok) throw new Error('Ошибка сети');
+                return response.text();
+            })
+            .then((html: string) => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.getElementById('profile-content');
+                if (newContent && profileContent) {
+                    profileContent.innerHTML = newContent.innerHTML;
+                    history.pushState({}, '', url);
+                    // Обновляем хлебные крошки
+                    const breadcrumbActive = document.querySelector<HTMLElement>('.breadcrumb-item.active');
+                    if (breadcrumbActive && link.dataset.title) {
+                        breadcrumbActive.textContent = link.dataset.title;
+                    }
+                }
+            })
+            .catch((error: unknown) => {
+                console.error('Ошибка загрузки раздела:', error);
+                // В случае ошибки переходим обычным способом
+                window.location.href = url;
+            })
+            .finally(() => {
+                pageLoader?.classList.remove('show');
+            });
+    });
+
+    // Обработчик кнопки "Назад" браузера
+    window.addEventListener('popstate', () => {
+        // Простейший способ – перезагрузить страницу с текущим URL
+        window.location.reload();
     });
 }

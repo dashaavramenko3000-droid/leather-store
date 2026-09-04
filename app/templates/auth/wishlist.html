@@ -1,58 +1,52 @@
-{% extends 'base.html' %}
+{% extends 'auth/_profile_layout.html' %}
 
-{% block title %}Избранное{% endblock %}
+{% block breadcrumb_title %}Избранное{% endblock %}
 
-{% block content %}
-<div class="container wishlist-page">
-    <!-- Хлебные крошки -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('auth.account') }}">Личный кабинет</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Избранное</li>
-        </ol>
-    </nav>
+{% block profile_content %}
 
-    <h2>Избранное</h2>
 
-    {% if products %}
-    <div class="product-grid">
-        {% for product in products %}
-        <div class="product-card">
-            <div class="product-image">
-                <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">
-                    {% set main_image = product.images|sort(attribute='order')|first %}
-                    {% if main_image %}
-                    <img src="{{ url_for('static', filename=main_image.image_path) }}" alt="{{ product.name }}">
-                    {% else %}
-                    <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения">
-                    {% endif %}
-                </a>
-            </div>
-            <div class="product-info">
-                <h3>
-                    <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">{{ product.name }}</a>
-                </h3>
-                <div class="product-price">{{ product.price }} ₽</div>
-                <div class="product-actions">
-                    <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">В корзину</button>
-                    <form action="{{ url_for('auth.remove_from_wishlist', product_id=product.id) }}" method="post" hx-boost="false">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-outline">Удалить</button>
-                    </form>
-                </div>
+<h2>Избранное</h2>
+
+{% if products %}
+<div class="product-grid">
+    {% for product in products %}
+    <div class="product-card">
+        <div class="product-image">
+            <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">
+                {% set main_image = product.images|sort(attribute='order')|first %}
+                {% if main_image %}
+                <img src="{{ url_for('static', filename=main_image.image_path) }}" alt="{{ product.name }}">
+                {% else %}
+                <img src="{{ url_for('static', filename='img/placeholder.png') }}" alt="Нет изображения">
+                {% endif %}
+            </a>
+        </div>
+        <div class="product-info">
+            <h3>
+                <a href="{{ url_for('main.product_detail', product_id=product.id) }}" hx-boost="false">{{ product.name
+                    }}</a>
+            </h3>
+            <div class="product-price">{{ product.price }} ₽</div>
+            <div class="product-actions">
+                <button type="button" class="btn btn-outline" onclick="addToCart({{ product.id }})">В корзину</button>
+                <form action="{{ url_for('auth.remove_from_wishlist', product_id=product.id) }}" method="post"
+                      hx-boost="false">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline">Удалить</button>
+                </form>
             </div>
         </div>
-        {% endfor %}
     </div>
+    {% endfor %}
+</div>
 
-    <!-- Пагинация -->
-    {% from "_pagination.html" import render_pagination %}
-    {{ render_pagination(pagination, 'auth.wishlist') }}
+<!-- Пагинация -->
+{% from "_pagination.html" import render_pagination %}
+{{ render_pagination(pagination, 'auth.wishlist') }}
 
-    {% else %}
-    <p class="no-products">В избранном пусто.</p>
-    {% endif %}
+{% else %}
+<p class="no-products">В избранном пусто.</p>
+{% endif %}
 
 </div>
 {% endblock %}
