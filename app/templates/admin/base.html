@@ -14,7 +14,7 @@
 
     <!-- Основные стили (после Bootstrap, чтобы переопределять его) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Дополнительные стили для конкретных страниц -->
     {% block extra_css %}{% endblock %}
 </head>
@@ -27,14 +27,14 @@
         </div>
         <nav class="admin-nav">
             <ul>
-                <li><a href="{{ url_for('admin.dashboard') }}">Панель</a></li>
-                <li><a href="{{ url_for('admin.products') }}">Товары</a></li>
-                <li><a href="{{ url_for('admin.orders') }}">Заказы</a></li>
-                <li><a href="{{ url_for('admin.custom_orders') }}">Заявки</a></li>
-                <li><a href="{{ url_for('admin.reviews') }}">Отзывы</a></li>
-                <li><a href="{{ url_for('admin.email_settings') }}">Настройки почты</a></li>
-                <li><a href="{{ url_for('admin.admin_logs') }}">Журнал</a></li>
-                <li><a href="{{ url_for('admin.logout') }}">Выйти</a></li>
+                <li><a href="{{ url_for('admin.dashboard') }}" hx-boost="false">Панель</a></li>
+                <li><a href="{{ url_for('admin.products') }}" hx-boost="false">Товары</a></li>
+                <li><a href="{{ url_for('admin.orders') }}" hx-boost="false">Заказы</a></li>
+                <li><a href="{{ url_for('admin.custom_orders') }}" hx-boost="false">Заявки</a></li>
+                <li><a href="{{ url_for('admin.reviews') }}" hx-boost="false">Отзывы</a></li>
+                <li><a href="{{ url_for('admin.email_settings') }}" hx-boost="false">Настройки почты</a></li>
+                <li><a href="{{ url_for('admin.admin_logs') }}" hx-boost="false">Журнал</a></li>
+                <li><a href="{{ url_for('admin.logout') }}" hx-boost="false">Выйти</a></li>
             </ul>
         </nav>
     </div>

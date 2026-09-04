@@ -1,9 +1,9 @@
 // Главный файл: импортирует и инициализирует все модули
-import { initSlider } from './slider';
-import { initTheme } from './theme';
-import { initLightbox } from './lightbox';
-import { addToCart } from './cart';
-import { initCommon, setActiveProfileLink } from './common';
+import {initSlider} from './slider';
+import {initTheme} from './theme';
+import {initLightbox} from './lightbox';
+import {addToCart} from './cart';
+import {initCommon} from './common';
 
 // Инициализация общих функций (прокрутка, лоадер, аккаунт, бургер)
 initCommon();
