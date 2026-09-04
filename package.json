@@ -1,0 +1,13 @@
+{
+  "name": "leather-store-frontend",
+  "version": "1.0.0",
+  "description": "Frontend TypeScript for Leather Store",
+  "scripts": {
+    "build": "esbuild static/ts/main.ts --bundle --minify --outfile=static/js/main.js",
+    "watch": "esbuild static/ts/main.ts --bundle --sourcemap --outfile=static/js/main.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.0",
+    "typescript": "^5.3.3"
+  }
+}
