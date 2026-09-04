@@ -3,58 +3,66 @@
 {% block title %}Вход{% endblock %}
 
 {% block content %}
-<!-- Модальное окно входа -->
-<div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="authModalLabel">Вход</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"
-                        onclick="window.location.href='/'"></button>
+<div class="auth-page">
+    <div class="auth-container">
+        <!-- Левая декоративная панель -->
+        <div class="auth-left">
+            <div class="auth-left-content">
+                <h1 class="auth-left-title">С возвращением!</h1>
+                <p class="auth-left-text">
+                    Войдите, чтобы продолжить покупки, просмотреть избранное и отслеживать заказы.
+                </p>
+                <ul class="auth-benefits">
+                    <li>✔ Личный кабинет</li>
+                    <li>✔ История заказов</li>
+                    <li>✔ Избранное</li>
+                    <li>✔ Быстрое оформление</li>
+                </ul>
             </div>
-            <div class="modal-body">
-                <form method="POST" hx-boost="false">
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.email_or_username.label(class="form-label") }}
-                        {{ form.email_or_username(class="form-control", placeholder="Email или логин") }}
-                        {% for error in form.email_or_username.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control", placeholder="Пароль") }}
-                        {% for error in form.password.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3 form-check">
-                        {{ form.remember(class="form-check-input") }}
-                        {{ form.remember.label(class="form-check-label") }}
-                    </div>
-                    <button type="submit" class="btn btn-leather">Войти</button>
-                    <div class="mt-3 text-center">
-                        <a href="{{ url_for('auth.reset_password_request') }}" class="auth-link" hx-boost="false">Забыли
-                            пароль?</a>
-                    </div>
-                </form>
-                <div class="mt-3 text-center">
-                    <a href="{{ url_for('auth.register') }}" class="auth-link" hx-boost="false">Нет аккаунта?
-                        Зарегистрируйтесь</a>
+        </div>
+
+        <!-- Правая часть с формой -->
+        <div class="auth-right">
+            <h2 class="auth-right-title">Вход</h2>
+            <p class="auth-right-subtitle">Введите свои данные для входа</p>
+
+            <form method="POST" hx-boost="false" class="auth-form">
+                {{ form.hidden_tag() }}
+
+                <div class="auth-field">
+                    <label class="auth-label">{{ form.email_or_username.label.text }}</label>
+                    {{ form.email_or_username(class="auth-input", placeholder="Email или логин",
+                    autocomplete="username") }}
+                    {% for error in form.email_or_username.errors %}
+                    <div class="auth-error">{{ error }}</div>
+                    {% endfor %}
                 </div>
+
+                <div class="auth-field">
+                    <label class="auth-label">{{ form.password.label.text }}</label>
+                    {{ form.password(class="auth-input", placeholder="Пароль", autocomplete="current-password") }}
+                    {% for error in form.password.errors %}
+                    <div class="auth-error">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="auth-field auth-remember">
+                    {{ form.remember(class="auth-checkbox") }}
+                    <label for="remember" class="auth-checkbox-label">{{ form.remember.label.text }}</label>
+                </div>
+
+                <button type="submit" class="auth-submit-btn">Войти</button>
+            </form>
+
+            <div class="auth-links">
+                <p class="auth-login-link">
+                    <a href="{{ url_for('auth.reset_password_request') }}" hx-boost="false">Забыли пароль?</a>
+                </p>
+                <p class="auth-login-link">
+                    Нет аккаунта? <a href="{{ url_for('auth.register') }}" hx-boost="false">Зарегистрироваться</a>
+                </p>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var authModal = new bootstrap.Modal(document.getElementById('authModal'));
-        authModal.show();
-    });
-</script>
 {% endblock %}

@@ -4,72 +4,80 @@
 
 {% block content %}
 <div class="container profile-wrapper">
+    <!-- Хлебные крошки -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('main.home') }}">Главная</a></li>
             <li class="breadcrumb-item active" aria-current="page">Личный кабинет</li>
         </ol>
     </nav>
-    <div class="row g-4">
+
+    <!-- Двухколоночный макет -->
+    <div class="profile-layout">
         <!-- Боковое меню -->
-        <div class="col-lg-3">
-            <div class="profile-sidebar">
-                <div class="profile-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h4>{{ current_user.full_name or 'Пользователь' }}</h4>
-                <p>{{ current_user.email }}</p>
-                <ul class="nav flex-column nav-pills">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('auth.account') }}"><i class="fas fa-home me-2"></i>Обзор</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.orders') }}"><i class="fas fa-shopping-bag me-2"></i>Мои
-                            заказы</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.wishlist') }}"><i class="fas fa-heart me-2"></i>Избранное</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.profile') }}"><i class="fas fa-pencil-alt me-2"></i>Редактировать</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.addresses') }}"><i class="fas fa-home me-2"></i>Мои
-                            адреса</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.change_password') }}"><i class="fas fa-key me-2"></i>Сменить
-                            пароль</a>
-                    </li>
-                </ul>
+        <aside class="profile-sidebar">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
             </div>
-        </div>
+            <h4 class="profile-name">{{ current_user.full_name or 'Пользователь' }}</h4>
+            <p class="profile-email">{{ current_user.email }}</p>
+
+            <ul class="profile-nav">
+                <li>
+                    <a href="{{ url_for('auth.account') }}" class="active" hx-boost="false">
+                        <i class="fas fa-home"></i> Обзор
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.orders') }}" hx-boost="false">
+                        <i class="fas fa-shopping-bag"></i> Мои заказы
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.wishlist') }}" hx-boost="false">
+                        <i class="fas fa-heart"></i> Избранное
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.profile') }}" hx-boost="false">
+                        <i class="fas fa-pencil-alt"></i> Редактировать профиль
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.addresses') }}" hx-boost="false">
+                        <i class="fas fa-map-marker-alt"></i> Мои адреса
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.change_password') }}" hx-boost="false">
+                        <i class="fas fa-key"></i> Сменить пароль
+                    </a>
+                </li>
+            </ul>
+        </aside>
 
         <!-- Основной контент -->
-        <div class="col-lg-9">
-            <div class="profile-main">
-                <h3>Обзор профиля</h3>
-                <div class="profile-info-grid">
-                    <div class="profile-info-item">
-                        <label>Имя</label>
-                        <span class="value">{{ current_user.full_name or 'Не указано' }}</span>
-                    </div>
-                    <div class="profile-info-item">
-                        <label>Email</label>
-                        <span class="value">{{ current_user.email }}</span>
-                    </div>
-                    <div class="profile-info-item">
-                        <label>Телефон</label>
-                        <span class="value">{{ current_user.phone or 'Не указан' }}</span>
-                    </div>
-                    <div class="profile-info-item">
-                        <label>Адрес</label>
-                        <span class="value">{{ current_user.address or 'Не указан' }}</span>
-                    </div>
+        <section class="profile-main">
+            <h3>Обзор профиля</h3>
+            <div class="profile-info-grid">
+                <div class="profile-info-item">
+                    <label>Имя</label>
+                    <span class="value">{{ current_user.full_name or 'Не указано' }}</span>
                 </div>
-
+                <div class="profile-info-item">
+                    <label>Email</label>
+                    <span class="value">{{ current_user.email }}</span>
+                </div>
+                <div class="profile-info-item">
+                    <label>Телефон</label>
+                    <span class="value">{{ current_user.phone or 'Не указан' }}</span>
+                </div>
+                <div class="profile-info-item">
+                    <label>Адрес</label>
+                    <span class="value">{{ current_user.address or 'Не указан' }}</span>
+                </div>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 {% endblock %}

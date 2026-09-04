@@ -1,5 +1,6 @@
 /**
- * Общие утилиты: лоадер, кнопка "Наверх", плавная прокрутка, аккаунт, бургер-меню.
+ * Общие утилиты: лоадер, кнопка "Наверх", плавная прокрутка, аккаунт, бургер-меню,
+ * а также автоматическое скрытие flash-уведомлений.
  */
 export function initCommon(): void {
     // Плавная прокрутка к якорям
@@ -38,18 +39,22 @@ export function initCommon(): void {
         });
     }
 
-    // Лоадер
+    // Лоадер страницы
     const pageLoader = document.getElementById('page-loader') as HTMLElement | null;
+
     function showLoader(): void {
         pageLoader?.classList.add('show');
     }
+
     function hideLoader(): void {
         pageLoader?.classList.remove('show');
     }
+
     window.addEventListener('beforeunload', showLoader);
     window.addEventListener('load', () => {
         setTimeout(hideLoader, 300);
     });
+
     document.addEventListener('submit', (e: SubmitEvent) => {
         const form = e.target as HTMLFormElement;
         if (form.closest('form[data-ajax="true"]')) return;
@@ -59,6 +64,7 @@ export function initCommon(): void {
     // Выпадающее меню аккаунта
     const accountToggle = document.getElementById('account-toggle') as HTMLButtonElement | null;
     const accountDropdown = document.getElementById('account-dropdown') as HTMLElement | null;
+
     if (accountToggle && accountDropdown) {
         accountToggle.addEventListener('click', (e: Event) => {
             e.stopPropagation();
@@ -70,11 +76,24 @@ export function initCommon(): void {
                 accountDropdown.classList.remove('open');
             }
         });
+
+        // Закрытие меню при клике на «Выйти» и показ лоадера
+        document.addEventListener('click', (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            const logoutLink = target.closest('.account-dropdown a[href*="logout"]');
+            if (logoutLink) {
+                accountDropdown?.classList.remove('open');
+                // Опционально показать лоадер
+                const pageLoader = document.getElementById('page-loader') as HTMLElement | null;
+                pageLoader?.classList.add('show');
+            }
+        });
     }
 
     // Бургер-меню
     const burgerMenu = document.getElementById('burger-menu') as HTMLButtonElement | null;
     const mainNav = document.getElementById('main-nav') as HTMLElement | null;
+
     if (burgerMenu && mainNav) {
         burgerMenu.addEventListener('click', () => {
             mainNav.classList.toggle('open');
@@ -107,4 +126,15 @@ export function initCommon(): void {
             }
         });
     }
+
+    // Автоматическое скрытие flash-уведомлений
+    const flashMessages = document.querySelectorAll<HTMLElement>('.flash-message');
+    flashMessages.forEach((el) => {
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.5s, transform 0.5s';
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(30px)';
+            setTimeout(() => el.remove(), 500);
+        }, 5000); // скрыть через 5 секунд
+    });
 }

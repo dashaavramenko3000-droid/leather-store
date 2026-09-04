@@ -18,7 +18,7 @@ export function initSlider(): void {
 
     function isSliderNeeded(): boolean {
         if (slides.length === 0) return false;
-        const viewportWidth = viewport.clientWidth;
+        const viewportWidth = viewport!.clientWidth;
         let totalWidth = 0;
         slides.forEach((slide) => {
             const style = window.getComputedStyle(slide);
@@ -31,7 +31,7 @@ export function initSlider(): void {
 
     function enableSlider(): void {
         sliderEnabled = true;
-        viewport.classList.remove('no-slider');
+        viewport!.classList.remove('no-slider');
         if (prevBtn) prevBtn.style.display = 'flex';
         if (nextBtn) nextBtn.style.display = 'flex';
         if (slides.length > 1 && !autoScrollInterval) {
@@ -42,11 +42,11 @@ export function initSlider(): void {
 
     function disableSlider(): void {
         sliderEnabled = false;
-        viewport.classList.add('no-slider');
+        viewport!.classList.add('no-slider');
         if (prevBtn) prevBtn.style.display = 'none';
         if (nextBtn) nextBtn.style.display = 'none';
         stopAutoScroll();
-        track.style.transform = 'none';
+        track!.style.transform = 'none';
     }
 
     function getSlideStep(): number {
@@ -60,7 +60,7 @@ export function initSlider(): void {
     function updateSlider(): void {
         if (!sliderEnabled) return;
         const step = getSlideStep();
-        track.style.transform = `translateX(-${currentIndex * step}px)`;
+        track!.style.transform = `translateX(-${currentIndex * step}px)`;
     }
 
     function nextSlide(): void {

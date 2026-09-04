@@ -25,6 +25,17 @@ from ..forms import (
 )
 
 
+def link_guest_orders_to_user(user):
+    """
+    Привязывает гостевые заказы и индивидуальные заявки к аккаунту,
+    если email совпадает с указанным при оформлении.
+    """
+    orders_updated = Order.query.filter_by(user_id=None, customer_email=user.email).update({'user_id': user.id})
+    custom_orders_updated = CustomOrder.query.filter_by(user_id=None, contact=user.email).update({'user_id': user.id})
+    db.session.commit()
+    return orders_updated, custom_orders_updated
+
+
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     """
@@ -54,6 +65,12 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
+
+        # Привязываем гостевые заказы и заявки
+        orders_linked, custom_linked = link_guest_orders_to_user(user)
+        if orders_linked or custom_linked:
+            flash('Мы нашли ваши предыдущие заказы и привязали их к аккаунту.', 'info')
+
         send_email(
             'Добро пожаловать в Кожаную мастерскую!',
             [user.email],
@@ -88,6 +105,10 @@ def login():
 
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
+            if user.email:
+                orders_linked, custom_linked = link_guest_orders_to_user(user)
+                if orders_linked or custom_linked:
+                    flash('Ваши предыдущие заказы были привязаны к аккаунту.', 'info')
 
             # Переносим гостевую корзину (из сессии) в корзину пользователя (БД)
             guest_cart = session.get('cart', {})
@@ -220,7 +241,6 @@ def set_default_address(address_id):
 @auth_bp.route('/account/orders')
 @login_required
 def orders():
-
     page = request.args.get('page', 1, type=int)
     per_page = 10
 
@@ -325,8 +345,8 @@ def wishlist():
     per_page = 12
 
     pagination = WishlistItem.query.filter_by(user_id=current_user.id) \
-                                   .order_by(WishlistItem.created_at.desc()) \
-                                   .paginate(page=page, per_page=per_page, error_out=False)
+        .order_by(WishlistItem.created_at.desc()) \
+        .paginate(page=page, per_page=per_page, error_out=False)
 
     items = pagination.items
     products = [item.product for item in items]

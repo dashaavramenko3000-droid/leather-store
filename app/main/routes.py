@@ -290,6 +290,13 @@ def checkout():
             return redirect(url_for('main.catalog'))
 
     form = CheckoutForm()
+    # Предзаполнение формы данными пользователя, если он авторизован и запрос GET
+    if request.method == 'GET' and current_user.is_authenticated:
+        form.customer_name.data = current_user.full_name or ''
+        form.customer_email.data = current_user.email or ''
+        form.customer_phone.data = current_user.phone or ''
+        form.address.data = current_user.address or ''
+
     if form.validate_on_submit():
         # Создаём заказ
         order = Order(
@@ -338,7 +345,7 @@ def checkout():
         else:
             session.pop('cart', None)
 
-        flash('Заказ успешно оформлен! Мы свяжемся с вами.', 'success')
+        flash('Ваш заказ принят! Мы свяжемся с вами для подтверждения в течение 2-3 рабочих дней.', 'success')
         return redirect(url_for('main.order_confirmation', order_id=order.id))
 
     # GET или ошибки валидации
@@ -392,6 +399,11 @@ def add_to_cart_ajax(product_id):
 @main_bp.route('/custom-order', methods=['GET', 'POST'])
 def custom_order():
     form = CustomOrderForm()
+    # Предзаполнение имени и email, если пользователь авторизован и запрос GET
+    if request.method == 'GET' and current_user.is_authenticated:
+        form.name.data = current_user.full_name or ''
+        form.email.data = current_user.email or ''
+
     if form.validate_on_submit():
         image_path = None
         if form.image.data:
@@ -407,7 +419,7 @@ def custom_order():
         )
         db.session.add(custom_order)
         db.session.commit()
-        flash('Ваша заявка отправлена! Мы свяжемся с вами в ближайшее время.', 'success')
+        flash('Ваша заявка принята! Мы свяжемся с вами по указанным контактам в течение 2-3 рабочих дней.', 'success')
         return redirect(url_for('main.home'))
     return render_template('custom_order.html', form=form)
 
