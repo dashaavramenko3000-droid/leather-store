@@ -1,0 +1,15 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>{{ title }}</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">{{ form.code.label }} {{ form.code(class="form-control") }}</div>
+    <div class="mb-3">{{ form.discount_type.label }} {{ form.discount_type(class="form-select") }}</div>
+    <div class="mb-3">{{ form.discount_value.label }} {{ form.discount_value(class="form-control") }}</div>
+    <div class="mb-3">{{ form.valid_from.label }} {{ form.valid_from(class="form-control") }}</div>
+    <div class="mb-3">{{ form.valid_until.label }} {{ form.valid_until(class="form-control") }}</div>
+    <div class="mb-3">{{ form.usage_limit.label }} {{ form.usage_limit(class="form-control") }}</div>
+    <div class="form-check mb-3">{{ form.active(class="form-check-input") }} {{ form.active.label(class="form-check-label") }}</div>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+</form>
+{% endblock %}

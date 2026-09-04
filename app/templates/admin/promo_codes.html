@@ -1,0 +1,23 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Промокоды</h2>
+<a href="{{ url_for('admin.add_promo_code') }}" class="btn btn-primary mb-3">Добавить промокод</a>
+<table class="table">
+    <thead><tr><th>Код</th><th>Тип</th><th>Значение</th><th>Срок</th><th>Использовано</th><th>Действия</th></tr></thead>
+    <tbody>
+    {% for code in codes %}
+        <tr>
+            <td>{{ code.code }}</td>
+            <td>{{ 'Процент' if code.discount_type == 'percent' else 'Сумма' }}</td>
+            <td>{{ code.discount_value }}{{ '%' if code.discount_type == 'percent' else ' ₽' }}</td>
+            <td>{{ code.valid_from.strftime('%d.%m.%Y') }} - {{ code.valid_until.strftime('%d.%m.%Y') }}</td>
+            <td>{{ code.usage_count }}{% if code.usage_limit %}/{{ code.usage_limit }}{% endif %}</td>
+            <td>
+                <a href="{{ url_for('admin.edit_promo_code', code_id=code.id) }}" class="btn btn-sm btn-outline-primary">Изменить</a>
+                <a href="{{ url_for('admin.delete_promo_code', code_id=code.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить?')">Удалить</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

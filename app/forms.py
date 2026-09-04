@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField, FileAllowed, FileField
 from wtforms import StringField, TextAreaField, PasswordField, SubmitField, SelectField, IntegerField, BooleanField, \
-    FloatField
+    FloatField, DateTimeLocalField
 from wtforms.validators import DataRequired, Length, Email, NumberRange, Regexp, EqualTo, Optional
 
 
@@ -168,3 +168,21 @@ class AddressForm(FlaskForm):
     postal_code = StringField('Почтовый индекс', validators=[Optional(), Length(max=20)])
     is_default = BooleanField('Сделать адресом по умолчанию')
     submit = SubmitField('Сохранить')
+
+class PromoCodeForm(FlaskForm):
+    code = StringField('Промокод', validators=[DataRequired(), Length(max=50)])
+    discount_type = SelectField('Тип скидки', choices=[
+        ('percent', 'Процент'),
+        ('fixed', 'Фиксированная сумма')
+    ], validators=[DataRequired()])
+    discount_value = FloatField('Значение', validators=[DataRequired(), NumberRange(min=0.01)])
+    valid_from = DateTimeLocalField('Действует с', validators=[DataRequired()], format='%Y-%m-%dT%H:%M')
+    valid_until = DateTimeLocalField('Действует до', validators=[DataRequired()], format='%Y-%m-%dT%H:%M')
+    usage_limit = IntegerField('Лимит использований (пусто = безлимит)', validators=[Optional()])
+    active = BooleanField('Активен')
+    submit = SubmitField('Сохранить')
+
+
+class PromoCodeApplyForm(FlaskForm):
+    code = StringField('Промокод', validators=[DataRequired()])
+    submit = SubmitField('Применить')

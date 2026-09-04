@@ -47,7 +47,8 @@
                             <div class="quantity-control d-flex align-items-center gap-1">
                                 <button type="button" class="btn btn-outline-secondary btn-sm qty-btn"
                                         onclick="changeQuantity({{ item.product.id }}, -1)"
-                                        {% if item.quantity <= 1 %}disabled{% endif %}>−
+                                        {% if item.quantity
+                                <= 1 %}disabled{% endif %}>−
                                 </button>
                                 <span class="fw-bold mx-1 qty-value"
                                       id="qty-{{ item.product.id }}">{{ item.quantity }}</span>

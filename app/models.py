@@ -69,6 +69,8 @@ class Order(db.Model):
     status = db.Column(db.String(20), default='new')  # new, processing, shipped, completed, cancelled
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     total_price = db.Column(db.Integer, nullable=False)
+    promo_code_id = db.Column(db.Integer, db.ForeignKey('promo_code.id'), nullable=True)
+    discount_amount = db.Column(db.Integer, nullable=False, default=0)  # в рублях
 
     items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
     status_history = db.relationship('OrderStatusHistory', back_populates='order', cascade='all, delete-orphan',
@@ -251,3 +253,30 @@ class AdminLog(db.Model):
 
     def __repr__(self):
         return f'<AdminLog {self.id} - {self.action}>'
+
+class PromoCode(db.Model):
+    """Промокод для скидки."""
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    discount_type = db.Column(db.String(20), nullable=False)  # 'percent' или 'fixed'
+    discount_value = db.Column(db.Float, nullable=False)       # процент (0-100) или сумма в рублях
+    valid_from = db.Column(db.DateTime, nullable=False)
+    valid_until = db.Column(db.DateTime, nullable=False)
+    usage_limit = db.Column(db.Integer, nullable=True)          # None = безлимит
+    usage_count = db.Column(db.Integer, default=0)
+    active = db.Column(db.Boolean, default=True)
+
+    orders = db.relationship('Order', backref='promo_code', lazy=True)
+
+    def __repr__(self):
+        return f'<PromoCode {self.code}>'
+
+
+class Setting(db.Model):
+    """Общие настройки сайта (пары ключ-значение)."""
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.String(500), nullable=False)
+
+    def __repr__(self):
+        return f'<Setting {self.key}={self.value}>'

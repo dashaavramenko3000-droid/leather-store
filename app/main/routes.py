@@ -1,3 +1,4 @@
+from datetime import datetime
 from email.headerregistry import Address
 
 from flask import render_template, request, session, redirect, url_for, flash, jsonify, abort, current_app, Response
@@ -8,8 +9,8 @@ from ..email_utils import send_email
 from ..utils import save_image
 from . import main_bp
 from ..extensions import db, cache
-from ..models import Product, Order, OrderItem, CartItem, CustomOrder, Review, Address
-from ..forms import CheckoutForm, CustomOrderForm, ReviewForm
+from ..models import Product, Order, OrderItem, CartItem, CustomOrder, Review, Address, PromoCode, Setting
+from ..forms import CheckoutForm, CustomOrderForm, ReviewForm, PromoCodeApplyForm
 
 
 @main_bp.context_processor
@@ -95,8 +96,8 @@ def add_to_cart(product_id):
 
 @main_bp.route('/cart')
 def cart():
+    """Страница корзины с применением промокода."""
     if current_user.is_authenticated:
-        # Получаем элементы корзины пользователя
         cart_items_db = CartItem.query.filter_by(user_id=current_user.id).order_by(CartItem.created_at).all()
         cart_items = []
         total = 0
@@ -108,11 +109,9 @@ def cart():
                 cart_items.append({
                     'product': product,
                     'quantity': item.quantity,
-                    'subtotal': subtotal,
-                    # 'cart_item_id': item.id  # для удаления/обновления
+                    'subtotal': subtotal
                 })
     else:
-        # Гостевая корзина (сессия)
         cart = session.get('cart', {})
         cart_items = []
         total = 0
@@ -124,12 +123,46 @@ def cart():
                 cart_items.append({
                     'product': product,
                     'quantity': qty,
-                    'subtotal': subtotal,
-                    'cart_item_id': product_id  # для гостей используем product_id
+                    'subtotal': subtotal
                 })
 
-    return render_template('cart.html', cart_items=cart_items, total=total)
+    promo_form = PromoCodeApplyForm()
 
+    # Применённый промокод из сессии
+    applied_promo = None
+    discount = 0
+    total_after_discount = total
+
+    promo_code = session.get('promo_code')
+    if promo_code:
+        promo = PromoCode.query.filter_by(code=promo_code, active=True).first()
+        now = datetime.utcnow()
+        if promo and promo.valid_from <= now <= promo.valid_until:
+            if promo.usage_limit is None or promo.usage_count < promo.usage_limit:
+                discount = get_promo_discount(promo, total)
+                total_after_discount = total - discount
+                applied_promo = promo
+            else:
+                session.pop('promo_code', None)
+        else:
+            session.pop('promo_code', None)
+
+    # Проверяем настройку видимости поля промокода
+    show_promo_field = True
+    setting = Setting.query.filter_by(key='show_promo_code_field').first()
+    if setting and setting.value == 'false':
+        show_promo_field = False
+
+    return render_template(
+        'cart.html',
+        cart_items=cart_items,
+        total=total,
+        total_after_discount=total_after_discount,
+        discount=discount,
+        applied_promo=applied_promo,
+        promo_form=promo_form,
+        show_promo_field=show_promo_field,
+    )
 
 @main_bp.route('/update_cart/<int:product_id>', methods=['POST'])
 def update_cart(product_id):
@@ -253,7 +286,8 @@ def remove_from_cart_ajax(product_id):
 
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
-    # Собираем корзину в зависимости от авторизации
+    """Оформление заказа с учётом промокода."""
+    # Собираем корзину
     if current_user.is_authenticated:
         cart_items_db = CartItem.query.filter_by(user_id=current_user.id).all()
         cart_items = []
@@ -289,15 +323,39 @@ def checkout():
             flash('Ваша корзина пуста', 'info')
             return redirect(url_for('main.catalog'))
 
+    # Форма оформления заказа
     form = CheckoutForm()
-    # Предзаполнение формы данными пользователя, если он авторизован и запрос GET
+
+    # Предзаполнение данных пользователя, если он авторизован и запрос GET
     if request.method == 'GET' and current_user.is_authenticated:
         form.customer_name.data = current_user.full_name or ''
         form.customer_email.data = current_user.email or ''
         form.customer_phone.data = current_user.phone or ''
         form.address.data = current_user.address or ''
 
+    # Получаем сохранённые адреса пользователя (если есть)
+    saved_addresses = []
+    if current_user.is_authenticated:
+        saved_addresses = Address.query.filter_by(user_id=current_user.id).all()
+
     if form.validate_on_submit():
+        # Применяем промокод, если он был в сессии
+        discount = 0
+        promo = None
+        promo_code = session.get('promo_code')
+        if promo_code:
+            promo = PromoCode.query.filter_by(code=promo_code, active=True).first()
+            now = datetime.utcnow()
+            if promo and promo.valid_from <= now <= promo.valid_until:
+                if promo.usage_limit is None or promo.usage_count < promo.usage_limit:
+                    discount = get_promo_discount(promo, total)
+                else:
+                    session.pop('promo_code', None)
+            else:
+                session.pop('promo_code', None)
+
+        total_after_discount = total - discount
+
         # Создаём заказ
         order = Order(
             user_id=current_user.id if current_user.is_authenticated else None,
@@ -306,11 +364,14 @@ def checkout():
             customer_phone=form.customer_phone.data,
             address=form.address.data,
             comment=form.comment.data,
-            total_price=total
+            total_price=total_after_discount,
+            discount_amount=discount,
+            promo_code_id=promo.id if promo else None
         )
         db.session.add(order)
-        db.session.flush()
+        db.session.flush()  # получаем order.id
 
+        # Добавляем позиции заказа
         for item in cart_items:
             order_item = OrderItem(
                 order_id=order.id,
@@ -321,39 +382,77 @@ def checkout():
             )
             db.session.add(order_item)
 
+        # Увеличиваем счётчик использований промокода
+        if promo:
+            promo.usage_count += 1
+            db.session.add(promo)
+
         db.session.commit()
-        # клиенту
+        session.pop('promo_code', None)  # очищаем применённый промокод
+
+        # Отправка email-уведомлений
         send_email(
             f'Заказ #{order.id} оформлен',
             [order.customer_email],
             'email/order_confirmation.html',
             order=order
         )
-        # администратору
         admin_email = current_app.config.get('ADMIN_EMAIL')
         if admin_email:
             send_email(
                 f'Новый заказ #{order.id}',
                 [admin_email],
-                'email/order_confirmation.html',  # можно отдельный шаблон для админа
+                'email/order_confirmation.html',
                 order=order
             )
-        # Очищаем корзину
+
+        # Очистка корзины
         if current_user.is_authenticated:
             CartItem.query.filter_by(user_id=current_user.id).delete()
             db.session.commit()
         else:
             session.pop('cart', None)
 
-        flash('Ваш заказ принят! Мы свяжемся с вами для подтверждения в течение 2-3 рабочих дней.', 'success')
+        flash('Заказ успешно оформлен! Мы свяжемся с вами в течение 2-3 рабочих дней.', 'success')
         return redirect(url_for('main.order_confirmation', order_id=order.id))
 
-    # GET или ошибки валидации
-    saved_addresses = []
-    if current_user.is_authenticated:
-        saved_addresses = Address.query.filter_by(user_id=current_user.id).all()
+    # Для GET-запроса или при ошибках валидации готовим данные для отображения
+    promo_form = PromoCodeApplyForm()
 
-    return render_template('checkout.html', form=form, cart_items=cart_items, total=total,
+    # Проверяем настройку видимости поля промокода
+    show_promo_field = True
+    setting = Setting.query.filter_by(key='show_promo_code_field').first()
+    if setting and setting.value == 'false':
+        show_promo_field = False
+
+    # Получаем применённый промокод из сессии для отображения
+    promo_code_applied = None
+    discount = 0
+    total_after_discount = total
+
+    promo_code = session.get('promo_code')
+    if promo_code:
+        promo = PromoCode.query.filter_by(code=promo_code, active=True).first()
+        now = datetime.utcnow()
+        if promo and promo.valid_from <= now <= promo.valid_until:
+            if promo.usage_limit is None or promo.usage_count < promo.usage_limit:
+                discount = get_promo_discount(promo, total)
+                total_after_discount = total - discount
+                promo_code_applied = promo
+            else:
+                session.pop('promo_code', None)
+        else:
+            session.pop('promo_code', None)
+
+    return render_template('checkout.html',
+                           form=form,
+                           cart_items=cart_items,
+                           total=total,
+                           total_after_discount=total_after_discount,
+                           discount=discount,
+                           promo_code_applied=promo_code_applied,
+                           promo_form=promo_form,
+                           show_promo_field=show_promo_field,
                            saved_addresses=saved_addresses)
 
 
@@ -506,3 +605,38 @@ def delivery():
 def custom_order_terms():
     """Страница условий индивидуального заказа."""
     return render_template('custom_order_terms.html')
+
+
+@main_bp.route('/apply-promo', methods=['POST'])
+def apply_promo():
+    form = PromoCodeApplyForm()
+    if form.validate_on_submit():
+        code_str = form.code.data.strip().upper()
+        promo = PromoCode.query.filter_by(code=code_str, active=True).first()
+        now = datetime.utcnow()
+        if not promo or promo.valid_from > now or promo.valid_until < now:
+            flash('Промокод недействителен или истёк', 'danger')
+        elif promo.usage_limit and promo.usage_count >= promo.usage_limit:
+            flash('Лимит использования промокода исчерпан', 'danger')
+        else:
+            session['promo_code'] = promo.code
+            flash('Промокод применён', 'success')
+
+    next_page = request.form.get('next')
+    if next_page and next_page.startswith('/'):
+        return redirect(next_page)
+    return redirect(url_for('main.cart'))
+
+
+def get_promo_discount(promo, subtotal):
+    if promo.discount_type == 'percent':
+        return int(subtotal * promo.discount_value / 100)
+    else:
+        return min(int(promo.discount_value), subtotal)
+
+@main_bp.context_processor
+def inject_promo_settings():
+    show_field = Setting.query.filter_by(key='show_promo_code_field').first()
+    show = True if not show_field or show_field.value == 'true' else False
+    return {'show_promo_field': show}
+

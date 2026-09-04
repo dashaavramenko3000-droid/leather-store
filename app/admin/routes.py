@@ -14,9 +14,9 @@ from ..extensions import db, cache
 from ..models import (
     User, Product, ProductImage, Order, OrderItem, CustomOrder,
     OrderStatusHistory, CustomOrderStatusHistory, OrderMessage,
-    CustomOrderMessage, Review, EmailSettings, AdminLog
+    CustomOrderMessage, Review, EmailSettings, AdminLog, PromoCode, Setting
 )
-from ..forms import LoginForm, ProductForm, EmailSettingsForm
+from ..forms import LoginForm, ProductForm, EmailSettingsForm, PromoCodeForm
 from ..utils import save_image, delete_image_file
 
 
@@ -500,3 +500,82 @@ def email_settings():
 def admin_logs():
     logs = AdminLog.query.order_by(AdminLog.created_at.desc()).limit(100).all()
     return render_template('admin/logs.html', logs=logs)
+
+
+@admin_bp.route('/promo-codes')
+@admin_required
+def promo_codes():
+    codes = PromoCode.query.order_by(PromoCode.valid_until.desc()).all()
+    return render_template('admin/promo_codes.html', codes=codes)
+
+
+@admin_bp.route('/promo-codes/add', methods=['GET', 'POST'])
+@admin_required
+def add_promo_code():
+    form = PromoCodeForm()
+    if form.validate_on_submit():
+        code = PromoCode(
+            code=form.code.data,
+            discount_type=form.discount_type.data,
+            discount_value=form.discount_value.data,
+            valid_from=form.valid_from.data,
+            valid_until=form.valid_until.data,
+            usage_limit=form.usage_limit.data,
+            active=form.active.data
+        )
+        db.session.add(code)
+        db.session.commit()
+        flash('Промокод добавлен', 'success')
+        return redirect(url_for('admin.promo_codes'))
+    return render_template('admin/promo_code_form.html', form=form, title='Добавить промокод')
+
+
+@admin_bp.route('/promo-codes/edit/<int:code_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_promo_code(code_id):
+    code = db.session.get(PromoCode, code_id)
+    if not code:
+        abort(404)
+    form = PromoCodeForm(obj=code)
+    if form.validate_on_submit():
+        code.code = form.code.data
+        code.discount_type = form.discount_type.data
+        code.discount_value = form.discount_value.data
+        code.valid_from = form.valid_from.data
+        code.valid_until = form.valid_until.data
+        code.usage_limit = form.usage_limit.data
+        code.active = form.active.data
+        db.session.commit()
+        flash('Промокод обновлён', 'success')
+        return redirect(url_for('admin.promo_codes'))
+    return render_template('admin/promo_code_form.html', form=form, title='Редактировать промокод', promo_code=code)
+
+
+@admin_bp.route('/promo-codes/delete/<int:code_id>')
+@admin_required
+def delete_promo_code(code_id):
+    code = db.session.get(PromoCode, code_id)
+    if not code:
+        abort(404)
+    db.session.delete(code)
+    db.session.commit()
+    flash('Промокод удалён', 'success')
+    return redirect(url_for('admin.promo_codes'))
+
+
+@admin_bp.route('/site-settings', methods=['GET', 'POST'])
+@admin_required
+def site_settings():
+    show_promo = Setting.query.filter_by(key='show_promo_code_field').first()
+    if not show_promo:
+        show_promo = Setting(key='show_promo_code_field', value='true')
+        db.session.add(show_promo)
+        db.session.commit()
+
+    if request.method == 'POST':
+        show_promo.value = 'true' if request.form.get('show_promo_code_field') == 'on' else 'false'
+        db.session.commit()
+        flash('Настройки сохранены', 'success')
+        return redirect(url_for('admin.site_settings'))
+
+    return render_template('admin/site_settings.html', show_promo=show_promo.value)
